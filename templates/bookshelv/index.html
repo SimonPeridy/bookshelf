@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script type="text/javascript" src="../../static/bootstrap-4.6.0/js/bootstrap.js"></script>
+    <link rel="stylesheet" type="text/css" href="../../static/bootstrap-4.6.0/css/bootstrap.css"/>
+    <meta charset="UTF-8" content="text/html;charset=UTF-8">
+    <title>Liste de livres</title>
+    <header>
+        <h1 style="text-align: center">Ma bibliothèque</h1>
+    </header>
+</head>
+<body>
+{#<div class="container">#}
+{#    <div class="form-group">#}
+{#        <form action="action" method="get" id="save">#}
+{#            <input type="text" name="name" placeholder="Prénom" id="name" class="form-control col-md-2" required>#}
+{#        </form>#}
+{#    </div>#}
+{#</div>#}
+<div class="container" id="search-div" style="margin-top: 7%;">
+    <div class="btn-group">
+        <div class="form-row">
+            <div class="d-flex flex-row align-items-center justify-content-between flex-wrap">
+                <div class="p-2">
+                    <form action="add_book" method="get">
+                        <input type="submit" value="Ajouter un livre" class="btn btn-primary btn-lg"
+                               style="min-width: 250px;">
+                    </form>
+                </div>
+                <div class="p-2">
+
+                    <form action="author_list" method="get">
+                        <input type="submit" value="Consulter votre liste" class="btn btn-primary btn-lg"
+                               style="min-width: 250px;">
+                    </form>
+                </div>
+            </div>
+        </div>
+</body>
+</html>

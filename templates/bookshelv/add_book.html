@@ -1,0 +1,106 @@
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../../static/bootstrap-4.6.0/css/bootstrap.css"/>
+    <title>Ajouter un livre</title>
+    <header style="text-align: center">
+        <section id="title"><h1>Quel livre souhaitez-vous ajouter ?</h1></section>
+    </header>
+</head>
+<body>
+<div class="container" style="margin-top: 7%;">
+    <div class="row">
+        <form action="" method="post">
+            {% csrf_token %}
+            <div class="form-row">
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" id="roman" name="type" value="0" checked>
+                    <label class="form-check-label" for="roman">Roman</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" id="documentaire" name="type" value="1">
+                    <label class="form-check-label" for="documentaire">Documentaire</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" id="manga" name="type" value="2">
+                    <label class="form-check-label" for="manga">Manga/BD</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" id="théâtre" name="type" value="3">
+                    <label class="form-check-label" for="théâtre">Théâtre</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" id="poésie" name="type" value="4">
+                    <label class="form-check-label" for="poésie">Poésie</label>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="electronique" name="ebook"
+                           value="ebook">
+                    <label class="form-check-label" for="electronique">Format électronique</label>
+                </div>
+            </div>
+            <div class="form-group">
+                <input type="text" name="title" placeholder="Titre" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <div class="autocomplete">
+                    <input type="text" id="author" name="author" placeholder="Auteur" class="form-control" required>
+                    <small class="form-text text-muted" id="hint">
+                        L'auteur doit être écrit sous la forme Nom, Prénom
+                    </small>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" id="1" name="mark" value="1">
+                    <label class="form-check-label" for="1">1</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" id="2" name="mark" value="2">
+                    <label class="form-check-label" for="2">2</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" id="3" name="mark" value="3">
+                    <label class="form-check-label" for="3">3</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" id="4" name="mark" value="4">
+                    <label class="form-check-label" for="4">4</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" id="5" name="mark" value="5" checked>
+                    <label class="form-check-label" for="5">5</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" id="6" name="mark" value="6">
+                    <label class="form-check-label" for="6">6</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" id="7" name="mark" value="7">
+                    <label class="form-check-label" for="7">7</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" id="8" name="mark" value="8">
+                    <label class="form-check-label" for="8">8</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" id="9" name="mark" value="9">
+                    <label class="form-check-label" for="9">9</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" id="10" name="mark" value="10">
+                    <label class="form-check-label" for="10">10</label>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="btn-group">
+                    <input type="reset" value="Réinitialiser" class="btn btn-outline-secondary btn-sm">
+                    <input type="submit" value="Ajouter" class="btn btn-outline-secondary btn-sm">
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

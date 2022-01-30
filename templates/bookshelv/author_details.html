@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script type="text/javascript" src="../../static/bootstrap-4.6.0/js/bootstrap.js"></script>
+    <link rel="stylesheet" type="text/css" href="../../static/bootstrap-4.6.0/css/bootstrap.css"/>
+    <meta charset="UTF-8">
+    <title>Liste des livres</title>
+</head>
+<body>
+<h3>Livres écrits par {{ author }}</h3>
+<ul>
+    {% for book in my_list %}
+        <li class="list-group-item list-group-item-secondary">
+            {{ book.title }}
+        </li>
+    {% endfor %}
+</ul>
+</body>
+</html>
