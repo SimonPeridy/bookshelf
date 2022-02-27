@@ -1,12 +1,14 @@
 function clear_search_bar(id){
     document.getElementById(id).value = ""
+    search(document.getElementById("form-author").value, document.getElementById("form-book").value)
 }
 
-function authorsSearch(searchString) {
+function search(author_name, book_name) {
     $.ajax({
         url: "",
         data: {
-            "author_name": searchString
+            "author_name": author_name,
+            "book_name": book_name
         },
         type: "POST",
         success: [function (data) {

@@ -27,12 +27,14 @@ def author_details(request, author_id):
 
 
 def search(request):
-    if request.method == "POST" and request.POST.get("author_name") is not None:
-        author_name = request.POST.get("author_name")
-        author_list = Author.objects.filter(
-            Q(firstname__icontains=author_name) | Q(lastname__icontains=author_name)).order_by("lastname", "firstname")
-        book_list = Book.objects.filter(
-            id__in=Base.objects.filter(author_id__in=author_list.values("id")).values("book_id")).order_by("title")
+    if request.method == "POST" and (
+            request.POST.get("author_name") is not None or request.POST.get("book_name") is not None):
+        author_name = request.POST.get("author_name").strip()
+        book_name = request.POST.get("book_name").strip()
+        base_list = Base.objects.filter(Q(book_id__title__icontains=book_name) & Q(
+            Q(author_id__firstname__icontains=author_name) | Q(author_id__lastname__icontains=author_name)))
+        author_list = Author.objects.filter(id__in=base_list.values("author_id")).order_by("lastname", "firstname")
+        book_list = Book.objects.filter(id__in=base_list.values("book_id")).order_by("title")
         author_list = list(author_list)
         book_list = list(book_list)
         nb_authors = len(author_list)
@@ -43,7 +45,7 @@ def search(request):
                    "formatted_list": formatted_list}
         return render(request, 'bookshelv/search.html', context)
     else:
-        author_list = list(Author.objects.order_by("lastname"))
+        author_list = list(Author.objects.order_by("lastname", "firstname"))
         nb_authors = len(author_list)
         book_list = list(Book.objects.order_by("title"))
         nb_books = len(book_list)
@@ -52,12 +54,6 @@ def search(request):
         context = {"author_list": author_list, "book_list": book_list, "nb_authors": nb_authors, "nb_books": nb_books,
                    "formatted_list": formatted_list}
         return render(request, 'bookshelv/author_list.html', context)
-
-
-def myurl_function(request, **kwargs):
-    # q = request.GET.__getitem__('q')
-    books = [book.title for book in Book.objects.filter(title__icontains=q)]
-    return HttpResponse(json.dumps(books))
 
 
 def add_book(request):

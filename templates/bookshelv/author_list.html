@@ -19,8 +19,7 @@
                     <div class="input-group">
                         {% csrf_token %}
                         <input type="search" id="form-author" class="form-control" placeholder="Nom"
-                               onkeyup="authorsSearch(this.value)"/>
-                        {{ author_search }}
+                               onkeyup="search(this.value, document.getElementById('form-book').value)"/>
                         <button class="input-group-append input-group-text" onclick="clear_search_bar('form-author')">
                             &times;
                         </button>
@@ -33,7 +32,8 @@
                 <div class="form-inline">
                     <div class="input-group">
                         {% csrf_token %}
-                        <input type="search" id="form-book" class="form-control" placeholder="Titre"/>
+                        <input type="search" id="form-book" class="form-control" placeholder="Titre"
+                               onkeyup="search(document.getElementById('form-author').value, this.value)"/>
                         <button class="input-group-append input-group-text" onclick="clear_search_bar('form-book')">
                             &times;
                         </button>
