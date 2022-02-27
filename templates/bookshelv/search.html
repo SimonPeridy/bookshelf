@@ -1,14 +1,45 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <script type="text/javascript" src="../../static/bootstrap-4.6.0/js/bootstrap.js"></script>
-    <link rel="stylesheet" type="text/css" href="../../static/bootstrap-4.6.0/css/bootstrap.css"/>
-    <meta charset="UTF-8">
-    <title>Consultation de vos livres</title>
-</head>
-<body>
-<form method="post" action="read">
-    <input type="text" placeholder="Auteur" name="author">
-    <input type="text" placeholder="Titre" name="title">
-</form>
-</body>
+    {% for author, book in formatted_list %}
+    <div class="row">
+        <div class="col-6 align-self-start">
+            {% if forloop.counter == 1 %}
+            <a class="align-self-start list-group-item list-group-item-action list-group-item-info rounded-top"
+               href="/bookshelv/{{ author.id }}/">
+                {{ author }}</a>
+            {% else %}
+            {% if forloop.counter < nb_authors %}
+            <a class="align-self-start list-group-item list-group-item-action list-group-item-info rounded-0"
+               href="/bookshelv/{{ author.id }}/">
+                {{ author }} </a>
+            {% else %}
+            {% if forloop.counter == nb_authors %}
+            <a class="align-self-start list-group-item list-group-item-action list-group-item-info rounded-bottom"
+               href="/bookshelv/{{ author.id }}/">
+                {{ author }} </a>
+            {% else %}
+            <a class="align-self-start list-group-item list-group-item-action list-group-item-info invisible"
+               href="/bookshelv/{{ author.id }}/">
+                {{ author }}
+            </a>
+            {% endif %}
+            {% endif %}
+            {% endif %}
+        </div>
+        <div class="col-6 align-self-start">
+            {% if forloop.counter == 1 %}
+            <li class="align-self-start list-group-item list-group-item-action list-group-item-secondary rounded-top">
+                <a href="/bookshelv/{{ author.id }}/">
+                    {{ book }} </a>
+                {% else %}
+                {% if forloop.counter < nb_books %}
+            <li class="align-self-start list-group-item list-group-item-action list-group-item-secondary rounded-0">
+                <a href="/bookshelv/{{ author.id }}/">
+                    {{ book }} </a>
+                {% else %}
+            <li class="align-self-start list-group-item list-group-item-action list-group-item-secondary rounded-bottom">
+                <a href="/bookshelv/{{ author.id }}/">
+                    {{ book }} </a>
+                {% endif %}
+                {% endif %}
+        </div>
+    </div>
+    {% endfor %}
