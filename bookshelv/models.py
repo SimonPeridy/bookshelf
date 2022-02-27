@@ -30,9 +30,16 @@ class Book(models.Model):
     mark = models.IntegerField(blank=True, null=True)
     type = models.IntegerField(blank=True, null=True)
     date_end_reading = models.DateField(blank=True, null=True)
+    series = models.CharField(max_length=MAX_LENGTH, blank=True, null=True)
+    language = models.CharField(max_length=MAX_LENGTH, blank=True, null=True)
 
     def __str__(self):
-        return self.title
+        display_string = f"{self.title}"
+        if self.mark is not None:
+            display_string += f", noté {self.mark}/10"
+        if self.series is not None:
+            display_string += f" ({self.series})"
+        return display_string
 
     class Meta:
         managed = False
