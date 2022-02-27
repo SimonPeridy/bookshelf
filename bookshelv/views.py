@@ -18,26 +18,16 @@ def index(request):
     return render(request, 'bookshelv/index.html', context)
 
 
-def author_details(request, author_id):
-    # l = Author.objects.get(id=author_id)
-    # return HttpResponse("You're looking at author {} with all these books : {}.".format(author_id, l.lastname))
-    l = Book.objects.filter(base__author_id=author_id).order_by("title")
-    context = {"my_list": l, "author": Author.objects.filter(id=author_id).get()}
-    return render(request, 'bookshelv/author_details.html', context)
-
-
 def search(request):
     if request.method == "POST" and (
             request.POST.get("author_name") is not None or request.POST.get("book_name") is not None):
         author_name = request.POST.get("author_name").strip()
         book_name = request.POST.get("book_name").strip()
         queryset = Author.objects.annotate(full_name=Concat("firstname", Value(" "), "lastname"))
-        # base_list = Base.objects.filter(Q(book_id__title__icontains=book_name) & Q(
-        #     Q(author_id__firstname__icontains=author_name) | Q(author_id__lastname__icontains=author_name)))
         base_list = Base.objects.filter(Q(book_id__title__icontains=book_name) & Q(
             author_id__in=queryset.filter(full_name__icontains=author_name).values("id")))
         author_list = Author.objects.filter(id__in=base_list.values("author_id")).order_by("lastname", "firstname")
-        book_list = Book.objects.filter(id__in=base_list.values("book_id")).order_by("title")
+        book_list = Book.objects.filter(id__in=base_list.values("book_id")).order_by("series", "title")
         author_list = list(author_list)
         book_list = list(book_list)
         nb_authors = len(author_list)

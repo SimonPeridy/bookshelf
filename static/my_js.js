@@ -17,8 +17,6 @@ function search(author_name, book_name) {
         },
         type: "POST",
         success: [function (data) {
-//            console.log("First diplaying the data")
-//            console.log(data)
             document.getElementById("my-body").innerHTML = data
         }],
         error: [function (request, error) {

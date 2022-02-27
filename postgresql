@@ -1,4 +1,0 @@
-username : postgresql ou postgres ??
-mdp : root
-
-pour save la BDD b : pg_dump.exe -p 5433 -U postgres b > save.sql
