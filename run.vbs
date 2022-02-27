@@ -1,0 +1,1 @@
+CreateObject("Wscript.Shell").Run "C:\Users\Simon\Documents\W\Bibliotheque\start.bat", 0, True
