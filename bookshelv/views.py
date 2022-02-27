@@ -6,8 +6,8 @@ from django.shortcuts import render
 # Create your views here.
 from django.http import HttpResponse
 from django.template import loader
-from django.db.models import Max, Q
-from django.db.models.functions import Lower
+from django.db.models import Max, Q, Value
+from django.db.models.functions import Lower, Concat
 from .form import AddBookForm
 from .models import Author, Book, Base
 
@@ -31,8 +31,11 @@ def search(request):
             request.POST.get("author_name") is not None or request.POST.get("book_name") is not None):
         author_name = request.POST.get("author_name").strip()
         book_name = request.POST.get("book_name").strip()
+        queryset = Author.objects.annotate(full_name=Concat("firstname", Value(" "), "lastname"))
+        # base_list = Base.objects.filter(Q(book_id__title__icontains=book_name) & Q(
+        #     Q(author_id__firstname__icontains=author_name) | Q(author_id__lastname__icontains=author_name)))
         base_list = Base.objects.filter(Q(book_id__title__icontains=book_name) & Q(
-            Q(author_id__firstname__icontains=author_name) | Q(author_id__lastname__icontains=author_name)))
+            author_id__in=queryset.filter(full_name__icontains=author_name).values("id")))
         author_list = Author.objects.filter(id__in=base_list.values("author_id")).order_by("lastname", "firstname")
         book_list = Book.objects.filter(id__in=base_list.values("book_id")).order_by("title")
         author_list = list(author_list)

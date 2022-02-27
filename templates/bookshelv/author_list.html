@@ -17,7 +17,6 @@
             <div class="col-3">
                 <div class="form-inline">
                     <div class="input-group">
-                        {% csrf_token %}
                         <input type="search" id="form-author" class="form-control" placeholder="Nom"
                                onkeyup="search(this.value, document.getElementById('form-book').value)"/>
                         <button class="input-group-append input-group-text" onclick="clear_search_bar('form-author')">
@@ -31,7 +30,6 @@
             <div class="col-3">
                 <div class="form-inline">
                     <div class="input-group">
-                        {% csrf_token %}
                         <input type="search" id="form-book" class="form-control" placeholder="Titre"
                                onkeyup="search(document.getElementById('form-author').value, this.value)"/>
                         <button class="input-group-append input-group-text" onclick="clear_search_bar('form-book')">
@@ -43,51 +41,7 @@
         </div>
     </div>
     <div id="my-body">
-        {% for author, book in formatted_list %}
-        <div class="row">
-            <div class="col-6 align-self-start">
-                {% if forloop.counter == 1 %}
-                <a class="align-self-start list-group-item list-group-item-action list-group-item-info rounded-top"
-                   href="/bookshelv/{{ author.id }}/">
-                    {{ author }}</a>
-                {% else %}
-                {% if forloop.counter < nb_authors %}
-                <a class="align-self-start list-group-item list-group-item-action list-group-item-info rounded-0"
-                   href="/bookshelv/{{ author.id }}/">
-                    {{ author }} </a>
-                {% else %}
-                {% if forloop.counter == nb_authors %}
-                <a class="align-self-start list-group-item list-group-item-action list-group-item-info rounded-bottom"
-                   href="/bookshelv/{{ author.id }}/">
-                    {{ author }} </a>
-                {% else %}
-                <a class="align-self-start list-group-item list-group-item-action list-group-item-info invisible"
-                   href="/bookshelv/{{ author.id }}/">
-                    {{ author }}
-                </a>
-                {% endif %}
-                {% endif %}
-                {% endif %}
-            </div>
-            <div class="col-6 align-self-start">
-                {% if forloop.counter == 1 %}
-                <li class="align-self-start list-group-item list-group-item-action list-group-item-secondary rounded-top">
-                    <a href="/bookshelv/{{ author.id }}/">
-                        {{ book }} </a>
-                    {% else %}
-                    {% if forloop.counter < nb_books %}
-                <li class="align-self-start list-group-item list-group-item-action list-group-item-secondary rounded-0">
-                    <a href="/bookshelv/{{ author.id }}/">
-                        {{ book }} </a>
-                    {% else %}
-                <li class="align-self-start list-group-item list-group-item-action list-group-item-secondary rounded-bottom">
-                    <a href="/bookshelv/{{ author.id }}/">
-                        {{ book }} </a>
-                    {% endif %}
-                    {% endif %}
-            </div>
-        </div>
-        {% endfor %}
+        {% include "bookshelv/search.html" %}
     </div>
 </div>
 </body>

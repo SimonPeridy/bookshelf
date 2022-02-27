@@ -1,45 +1,10 @@
-    {% for author, book in formatted_list %}
-    <div class="row">
-        <div class="col-6 align-self-start">
-            {% if forloop.counter == 1 %}
-            <a class="align-self-start list-group-item list-group-item-action list-group-item-info rounded-top"
-               href="/bookshelv/{{ author.id }}/">
-                {{ author }}</a>
-            {% else %}
-            {% if forloop.counter < nb_authors %}
-            <a class="align-self-start list-group-item list-group-item-action list-group-item-info rounded-0"
-               href="/bookshelv/{{ author.id }}/">
-                {{ author }} </a>
-            {% else %}
-            {% if forloop.counter == nb_authors %}
-            <a class="align-self-start list-group-item list-group-item-action list-group-item-info rounded-bottom"
-               href="/bookshelv/{{ author.id }}/">
-                {{ author }} </a>
-            {% else %}
-            <a class="align-self-start list-group-item list-group-item-action list-group-item-info invisible"
-               href="/bookshelv/{{ author.id }}/">
-                {{ author }}
-            </a>
-            {% endif %}
-            {% endif %}
-            {% endif %}
-        </div>
-        <div class="col-6 align-self-start">
-            {% if forloop.counter == 1 %}
-            <li class="align-self-start list-group-item list-group-item-action list-group-item-secondary rounded-top">
-                <a href="/bookshelv/{{ author.id }}/">
-                    {{ book }} </a>
-                {% else %}
-                {% if forloop.counter < nb_books %}
-            <li class="align-self-start list-group-item list-group-item-action list-group-item-secondary rounded-0">
-                <a href="/bookshelv/{{ author.id }}/">
-                    {{ book }} </a>
-                {% else %}
-            <li class="align-self-start list-group-item list-group-item-action list-group-item-secondary rounded-bottom">
-                <a href="/bookshelv/{{ author.id }}/">
-                    {{ book }} </a>
-                {% endif %}
-                {% endif %}
-        </div>
+{% for author, book in formatted_list %}
+<div class="row">
+    <div class="col-6 align-self-start">
+        {% include "bookshelv/display_authors_template.html" %}
     </div>
-    {% endfor %}
+    <div class="col-6 align-self-start">
+        {% include "bookshelv/display_books_template.html" %}
+    </div>
+</div>
+{% endfor %}

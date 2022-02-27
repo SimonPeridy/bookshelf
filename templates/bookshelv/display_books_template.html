@@ -1,0 +1,25 @@
+{% if forloop.counter == 1 and nb_books == 1 %}
+<button class="align-self-start list-group-item list-group-item-action list-group-item-secondary rounded"
+        onclick="document.getElementById('form-book').value='{{ book.title }}';launch_search()">
+    {% include "bookshelv/description_book_template.html" %}
+</button>
+{% else %}
+{% if forloop.counter == 1 %}
+<button class="align-self-start list-group-item list-group-item-action list-group-item-secondary rounded-top"
+        onclick="document.getElementById('form-book').value='{{ book.title }}';launch_search()">
+    {% include "bookshelv/description_book_template.html" %}
+</button>
+{% else %}
+{% if forloop.counter < nb_books %}
+<button class="align-self-start list-group-item list-group-item-action list-group-item-secondary rounded-0"
+        onclick="document.getElementById('form-book').value='{{ book.title }}';launch_search()">
+    {% include "bookshelv/description_book_template.html" %}
+</button>
+{% else %}
+<button class="align-self-start list-group-item list-group-item-action list-group-item-secondary rounded-bottom"
+        onclick="document.getElementById('form-book').value='{{ book.title }}';launch_search()">
+    {% include "bookshelv/description_book_template.html" %}
+</button>
+{% endif %}
+{% endif %}
+{% endif %}

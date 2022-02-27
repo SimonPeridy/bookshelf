@@ -1,0 +1,32 @@
+{% if forloop.counter == 1 and nb_authors == 1 %}
+<button class="align-self-start list-group-item list-group-item-action list-group-item-info rounded"
+        onclick="document.getElementById('form-author').value='{{ author }}';launch_search()">
+    {{ author }}
+</button>
+{% else %}
+{% if forloop.counter == 1 %}
+<button class="align-self-start list-group-item list-group-item-action list-group-item-info rounded-top"
+        onclick="document.getElementById('form-author').value='{{ author }}';launch_search()">
+    {{ author }}
+</button>
+{% else %}
+{% if forloop.counter < nb_authors %}
+<button class="align-self-start list-group-item list-group-item-action list-group-item-info rounded-0"
+        onclick="document.getElementById('form-author').value='{{ author }}';launch_search()">
+    {{ author }}
+</button>
+{% else %}
+{% if forloop.counter == nb_authors %}
+<button class="align-self-start list-group-item list-group-item-action list-group-item-info rounded-bottom"
+        onclick="document.getElementById('form-author').value='{{ author }}';launch_search()">
+    {{ author }}
+</button>
+{% else %}
+<button class="align-self-start list-group-item list-group-item-action list-group-item-info invisible"
+        onclick="document.getElementById('form-author').value='{{ author }}';launch_search()">
+    {{ author }}
+</button>
+{% endif %}
+{% endif %}
+{% endif %}
+{% endif %}
