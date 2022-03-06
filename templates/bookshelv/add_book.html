@@ -4,11 +4,12 @@
     <script src="{{ STATIC_URL }}/static/my_js.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}/static/bootstrap-5.1.3/js/bootstrap.js"></script>
     <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}/static/bootstrap-5.1.3/css/bootstrap.css"/>
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}/static/my_css.css"/>
     <link rel="icon" href="{{ STATIC_URL }}/static/favicon.ico"/>
     <title>Ajouter un livre</title>
     {% include "bookshelv/home_button.html" %}
     <header style="text-align: center">
-        <section id="title"><h1>Quel livre souhaitez-vous ajouter ?</h1></section>
+        <section><h1>Quel livre souhaitez-vous ajouter ?</h1></section>
     </header>
 </head>
 <body>
@@ -38,42 +39,58 @@
                     <label class="form-check-label" for="poésie">Poésie</label>
                 </div>
             </div>
-            <div class="form-group">
+            <div class="input-group">
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" id="electronique" name="ebook"
                            value="ebook">
                     <label class="form-check-label" for="electronique">Format électronique</label>
                 </div>
             </div>
-            <div class="form-group">
-                <input type="text" name="title" placeholder="Titre" class="form-control" autocomplete="off" required>
-            </div>
-            <div class="form-group">
-                <div class="autocomplete">
-                    <input type="text" id="author" name="author" placeholder="Auteur" class="form-control"
-                           autocomplete="off" required>
-                    <small class="form-text text-muted" id="hint">
-                        L'auteur doit être écrit sous la forme Nom, Prénom
-                    </small>
+            <div class="row input-group">
+                <div class="col">
+                    <div class="form-floating">
+                        <input type="text" id="title" name="title" placeholder="Titre" class="form-control"
+                               autocomplete="off"
+                               required>
+                        <label for="title">Titre</label>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="form-floating">
+                        <input type="text" id="author" name="author" placeholder="Auteur" class="form-control"
+                               autocomplete="off" required>
+                        <label for="author">Auteur</label>
+                    </div>
                 </div>
             </div>
-            <div class="form-group">
-                <div class="autocomplete">
-                    <input type="text" id="series" name="series" placeholder="Série" class="form-control"
-                           autocomplete="off">
-                    <small class="form-text text-muted" id="hint2">
-                        Nom de la série
-                    </small>
+            <hr>
+            <div class="row input-group">
+                <div class="col 3">
+                    <div class="form-floating">
+                        <input type="text" id="series" name="series" placeholder="Série" class="form-control"
+                               autocomplete="off">
+                        <label for="series">Série</label>
+                    </div>
                 </div>
-                <input type="number" id="series_number" name="series_number" placeholder="Numéro">
+                <div class="col 9">
+                    <div class="form-floating">
+                        <input type="number" id="series_number" name="series_number" placeholder="Numéro"
+                               class="form-control"
+                               min="1">
+                        <label for="series_number">Numéro</label>
+                    </div>
+                </div>
             </div>
-            <div>
-                <select class="form-select form-select-sm" name="language">
+            <hr>
+            <div class="form-floating">
+                <select class="form-select form-select-sm" name="language" id="language">
                     <option value="french" selected>Français</option>
                     <option value="english">Anglais</option>
                 </select>
+                <label for="language">Langue</label>
             </div>
             <div class="form-row">
+                <label class="">Note</label>
                 <div class="form-check form-check-inline">
                     <input class="form-check-input" type="radio" id="1" name="mark" value="1">
                     <label class="form-check-label" for="1">1</label>

@@ -47,14 +47,19 @@ function myautocomplete(search_string, field_type) {
 }
 
 window.onload = function () {
-    console.log("Loading window")
     autocomplete(document.getElementById("author"), authors);
     autocompleteSeries(document.getElementById("series"), series);
+    document.getElementById("series_number").addEventListener("keyup", function(){
+        if ((document.getElementById("series_number").value != "") && (document.getElementById("series_number").value < 1)) {
+            document.getElementById("series_number").setAttribute("class", "form-control is-invalid")
+        } else {
+            document.getElementById("series_number").setAttribute("class", "form-control")
+        }
+    })
 }
 
 //autocomplete life
 function autocomplete(inp, arr) {
-    console.log("author autocomplete")
     /*the autocomplete function takes two arguments,
     the text field element and an array of possible autocompleted values:*/
     var currentFocus;
@@ -70,7 +75,7 @@ function autocomplete(inp, arr) {
                 type: "POST",
                 async: false,
                 success: function (data) {
-                    document.getElementById("hint").hidden = true
+//                    document.getElementById("hint").hidden = true
                     arr = data.author_list
                 },
                 error: function (request, error) {
@@ -112,7 +117,7 @@ function autocomplete(inp, arr) {
                     /*close the list of autocompleted values,
                     (or any other open lists of autocompleted values:*/
                     closeAllLists();
-                    document.getElementById("hint").hidden = false
+//                    document.getElementById("hint").hidden = false
                 });
                 a.appendChild(b);
             }
@@ -199,7 +204,7 @@ function autocompleteSeries(inp, arr) {
                 type: "POST",
                 async: false,
                 success: function (data) {
-                    document.getElementById("hint2").hidden = true
+//                    document.getElementById("hint2").hidden = true
                     arr = data.series_list
                 },
                 error: function (request, error) {
@@ -247,7 +252,7 @@ function autocompleteSeries(inp, arr) {
                     /*close the list of autocompleted values,
                     (or any other open lists of autocompleted values:*/
                     closeAllLists();
-                    document.getElementById("hint2").hidden = false
+//                    document.getElementById("hint2").hidden = false
                 });
                 a.appendChild(b);
             }
@@ -313,4 +318,3 @@ function autocompleteSeries(inp, arr) {
         closeAllLists(e.target);
     });
 }
-

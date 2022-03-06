@@ -91,7 +91,7 @@ def add_book(request):
                 new_author = Author.objects.create(firstname=author_firstname, lastname=author_lastname,
                                                    id=author_id + 1)
                 new_author.save()
-                logger.debug("Author created")
+                logger.info("Author created")
             new_base_id = Base.objects.values_list("id", flat=True).aggregate(Max("id"))["id__max"] + 1
             base_object = Base.objects.create(id=new_base_id, author_id=author_id, book_id=new_book.id)
             base_object.save()
