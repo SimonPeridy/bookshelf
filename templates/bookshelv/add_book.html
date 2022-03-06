@@ -46,6 +46,7 @@
                     <label class="form-check-label" for="electronique">Format électronique</label>
                 </div>
             </div>
+            <hr>
             <div class="row input-group">
                 <div class="col">
                     <div class="form-floating">
@@ -74,9 +75,8 @@
                 </div>
                 <div class="col 9">
                     <div class="form-floating">
-                        <input type="number" id="series_number" name="series_number" placeholder="Numéro"
-                               class="form-control"
-                               min="1">
+                        <input type="text" id="series_number" name="series_number" placeholder="Numéro"
+                               class="form-control" onfocus="this.value=''">
                         <label for="series_number">Numéro</label>
                     </div>
                 </div>
@@ -90,7 +90,7 @@
                 <label for="language">Langue</label>
             </div>
             <div class="form-row">
-                <label class="">Note</label>
+                <label>Note</label>
                 <div class="form-check form-check-inline">
                     <input class="form-check-input" type="radio" id="1" name="mark" value="1">
                     <label class="form-check-label" for="1">1</label>
@@ -132,10 +132,12 @@
                     <label class="form-check-label" for="10">10</label>
                 </div>
             </div>
-            <div class="form-row">
-                <div class="btn-group">
-                    <input type="reset" value="Réinitialiser" class="btn btn-outline-secondary btn-sm">
-                    <input type="submit" value="Ajouter" class="btn btn-outline-secondary btn-sm">
+            <div class="align-self-end align-items-end">
+                <div class="form-row">
+                    <div class="btn-group align-self-end">
+                        <input type="reset" value="Réinitialiser" class="btn btn-outline-secondary btn-sm">
+                        <input type="submit" value="Ajouter" class="btn btn-outline-secondary btn-sm">
+                    </div>
                 </div>
             </div>
         </form>

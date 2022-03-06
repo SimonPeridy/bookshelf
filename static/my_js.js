@@ -50,7 +50,8 @@ window.onload = function () {
     autocomplete(document.getElementById("author"), authors);
     autocompleteSeries(document.getElementById("series"), series);
     document.getElementById("series_number").addEventListener("keyup", function(){
-        if ((document.getElementById("series_number").value != "") && (document.getElementById("series_number").value < 1)) {
+        var value = parseInt(document.getElementById("series_number").value, 10)
+        if ((isNaN(value)) || (value < 1)) {
             document.getElementById("series_number").setAttribute("class", "form-control is-invalid")
         } else {
             document.getElementById("series_number").setAttribute("class", "form-control")
