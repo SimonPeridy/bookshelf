@@ -4,7 +4,7 @@ import json
 from django.shortcuts import render
 
 # Create your views here.
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.template import loader
 from django.db.models import Max, Q, Value
 from django.db.models.functions import Lower, Concat
@@ -47,6 +47,26 @@ def search(request):
         context = {"author_list": author_list, "book_list": book_list, "nb_authors": nb_authors, "nb_books": nb_books,
                    "formatted_list": formatted_list}
         return render(request, 'bookshelv/author_list.html', context)
+
+
+def get_authors(request):
+    if request.method == "POST":
+        author_name = request.POST.get("author_name").strip()
+        queryset = Author.objects.annotate(full_name=Concat("lastname", Value(", "), "firstname"))
+        # authors_list = queryset.filter(
+        #     Q(firstname__icontains=author_name) | Q(lastname__icontains=author_name)).order_by("lastname", "firstname")
+        authors_list = list(queryset.values_list("full_name", flat=True))
+        context = {"author_list": authors_list}
+        return JsonResponse(context)
+
+
+def get_series(request):
+    if request.method == "POST":
+        series_name = request.POST.get("series_name").strip()
+        series_list = Book.objects.filter(series__icontains=series_name).get("series").disctinct().order_by("series")
+        series_list = list(series_list)
+        context = {"series_list": series_list}
+        return JsonResponse(context)
 
 
 def add_book(request):
