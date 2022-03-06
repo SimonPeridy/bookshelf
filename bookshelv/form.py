@@ -9,3 +9,7 @@ class AddBookForm(forms.Form):
     author = forms.CharField(label="Auteur")
     mark_list = ((i, i) for i in range(1, 11))
     mark = forms.ChoiceField(label="Note", choices=mark_list)
+    language_list = (("french", "Français"), ("english", "Anglais"))
+    language = forms.ChoiceField(label="Langue", choices=language_list, widget=forms.Select)
+    series = forms.CharField(label="Série")
+    series_number = forms.IntegerField(label="Numéro", min_value=1)

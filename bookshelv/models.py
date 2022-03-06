@@ -32,6 +32,7 @@ class Book(models.Model):
     date_end_reading = models.DateField(blank=True, null=True)
     series = models.CharField(max_length=MAX_LENGTH, blank=True, null=True)
     language = models.CharField(max_length=MAX_LENGTH, blank=True, null=True)
+    series_number = models.IntegerField(blank=True, null=True)
 
     def __str__(self):
         display_string = f"{self.title}"

@@ -190,9 +190,9 @@ function autocompleteSeries(inp, arr) {
     var currentFocus;
     /*execute a function when someone writes in the text field:*/
     inp.addEventListener("input", function (e) {
-        if (document.getElementById("author").value !== "") {
+        if (document.getElementById("series").value !== "") {
             $.ajax({
-                url: "get_series",
+                url: "get_series/",
                 data: {
                     "series_name": document.getElementById("series").value
                 },
@@ -200,14 +200,16 @@ function autocompleteSeries(inp, arr) {
                 async: false,
                 success: function (data) {
                     document.getElementById("hint2").hidden = true
-                    arr = data
+                    arr = data.series_list
                 },
                 error: function (request, error) {
                     console.log("error: " + error);
                 }
             });
         }
+        console.log("outside of req")
         var a, b, i, val = this.value;
+        //var series_name, series_max_number;
         /*close any already open lists of autocompleted values*/
         closeAllLists();
         if (!val) {
@@ -217,27 +219,31 @@ function autocompleteSeries(inp, arr) {
         /*create a DIV element that will contain the items (values):*/
         a = document.createElement("DIV");
         a.setAttribute("id", this.id + "autocomplete-list");
-        a.setAttribute("class", "autocomplete-items list-group");
+        a.setAttribute("class", "autocomplete-series");
         /*append the DIV element as a child of the autocomplete container:*/
         this.parentNode.appendChild(a);
         /*for each item in the array...*/
         for (i = 0; i < arr.length; i++) {
+            var series_name = arr[i].series;
+            var series_max_number = arr[i].series_number__max;
             /*check if the item starts with the same letters as the text field value:*/
-            if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
+            if (series_name.substring(0, val.length).toUpperCase() == val.toUpperCase()) {
                 /*create a DIV element for each matching element:*/
-                b = document.createElement("DIV");
+                b = document.createElement("button");
 
-                b.setAttribute("class", "list-group-item list-group-item-dark")
+                b.setAttribute("class", "list-group-item list-group-item-action list-group-item-primary")
 
                 /*make the matching letters bold:*/
-                b.innerHTML = "<strong>" + arr[i].substr(0, val.length) + "</strong>";
-                b.innerHTML += arr[i].substr(val.length);
+                b.innerHTML = "<strong>" + series_name.substring(0, val.length) + "</strong>";
+                b.innerHTML += series_name.substring(val.length);
                 /*insert a input field that will hold the current array item's value:*/
-                b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
+                b.innerHTML += "<input type='hidden' value='" + series_name + "'>";
+                b.innerHTML += "<input type='hidden' value='" + series_max_number + "'>";
                 /*execute a function when someone clicks on the item value (DIV element):*/
                 b.addEventListener("click", function (e) {
                     /*insert the value for the autocomplete text field:*/
                     inp.value = this.getElementsByTagName("input")[0].value;
+                    document.getElementById("series_number").value = parseInt(this.getElementsByTagName("input")[1].value) + 1;
                     /*close the list of autocompleted values,
                     (or any other open lists of autocompleted values:*/
                     closeAllLists();
@@ -250,7 +256,7 @@ function autocompleteSeries(inp, arr) {
     /*execute a function presses a key on the keyboard:*/
     inp.addEventListener("keydown", function (e) {
         var x = document.getElementById(this.id + "autocomplete-list");
-        if (x) x = x.getElementsByTagName("div");
+        if (x) x = x.getElementsByTagName("button");
         if (e.keyCode == 40) {
             /*If the arrow DOWN key is pressed,
             increase the currentFocus variable:*/
@@ -281,20 +287,20 @@ function autocompleteSeries(inp, arr) {
         if (currentFocus >= x.length) currentFocus = 0;
         if (currentFocus < 0) currentFocus = (x.length - 1);
         /*add class "autocomplete-active":*/
-        x[currentFocus].classList.add("autocomplete-active");
+        x[currentFocus].classList.add("active");
     }
 
     function removeActive(x) {
         /*a function to remove the "active" class from all autocomplete items:*/
         for (var i = 0; i < x.length; i++) {
-            x[i].classList.remove("autocomplete-active");
+            x[i].classList.remove("active");
         }
     }
 
     function closeAllLists(elmnt) {
         /*close all autocomplete lists in the document,
         except the one passed as an argument:*/
-        var x = document.getElementsByClassName("autocomplete-items");
+        var x = document.getElementsByClassName("autocomplete-series");
         for (var i = 0; i < x.length; i++) {
             if (elmnt != x[i] && elmnt != inp) {
                 x[i].parentNode.removeChild(x[i]);
