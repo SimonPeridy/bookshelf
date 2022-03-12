@@ -1,0 +1,32 @@
+services:
+  db:
+    image: postgres:13.6-alpine
+    container_name: postgre-database
+    command:
+      - sh "/var/lib/postgresql/data/pg_restore -U postgres -p 5432 -d bookshelf tarformat.sql
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_NAME=bookshelf
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+#      pg_restore -U postgres -p 5432 -d bookshelf tarformat.sql
+  web:
+    build: .
+    container_name: web-container
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_NAME=bookshelf
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+    depends_on:
+      - db
+
