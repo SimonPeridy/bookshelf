@@ -20,6 +20,7 @@ def index(request):
 
 
 def search(request):
+    logger.info("Looking for a book or an author...")
     if request.method == "POST" and (
             request.POST.get("author_name") is not None or request.POST.get("book_name") is not None):
         author_name = request.POST.get("author_name").strip()
@@ -37,6 +38,8 @@ def search(request):
         formatted_list = zip(author_list, book_list)
         context = {"author_list": author_list, "book_list": book_list, "nb_authors": nb_authors, "nb_books": nb_books,
                    "formatted_list": formatted_list}
+
+        logger.info(f"{nb_authors} authors and {nb_books} found corresponding to the search")
         return render(request, 'bookshelv/search.html', context)
     else:
         author_list = list(Author.objects.order_by("lastname", "firstname"))
@@ -51,19 +54,24 @@ def search(request):
 
 
 def get_authors(request):
+    logger.info("Requesting the authors...")
     if request.method == "POST":
         queryset = Author.objects.annotate(full_name=Concat("lastname", Value(", "), "firstname"))
         authors_list = list(queryset.values_list("full_name", flat=True))
         context = {"author_list": authors_list}
+        logger.info(f"{len(authors_list)} authors found")
         return JsonResponse(context)
 
 
 def get_series(request):
+    logger.info("Requesting the series...")
     if request.method == "POST":
         series_list = Book.objects.values("series").exclude(series__isnull=True).annotate(
             Max("series_number")).order_by("series")
         series_list = list(series_list)
         context = {"series_list": series_list}
+        logger.info(f"{len(series_list)} series found")
+        # return render(request,"bookshelv/series_list.html",context)
         return JsonResponse(context)
 
 
@@ -99,8 +107,29 @@ def add_book(request):
             context = {"title": new_book.title}
             return render(request, "bookshelv/validation.html", context)
         else:
+            logger.info("Something was wrong in the form")
             form = AddBookForm()
             return render(request, 'bookshelv/add_book.html', {'form': form})
     else:
         form = AddBookForm()
         return render(request, 'bookshelv/add_book.html', {'form': form})
+
+
+def series_entry(request):
+    logger.info("Loading the series list page")
+    series_list = Book.objects.filter(series__isnull=False).distinct("series").values_list("series", flat=True)
+    context = {"nb_series": len(list(series_list)), "series_list": list(series_list)}
+    return render(request,"bookshelv/display_series.html", context)
+
+def series_list(request):
+    logger.info("Accessing the series")
+    if request.POST.get("series_name") != None and request.POST.get("series_name") != "":
+        series_list = Book.objects.filter(
+            Q(series__isnull=False) & Q(series__icontains=request.POST.get("series_name"))).distinct(
+            "series").values_list("series", flat=True)
+    else:
+        series_list = Book.objects.filter(series__isnull=False).distinct("series").values_list("series", flat=True)
+    nb_series = len(list(series_list))
+    logger.info(f"{nb_series} series found")
+    context = {"nb_series": nb_series, "series_list": list(series_list)}
+    return render(request, "bookshelv/series_list.html", context)
