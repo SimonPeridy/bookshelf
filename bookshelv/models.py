@@ -39,7 +39,7 @@ class Book(models.Model):
         if self.mark is not None:
             display_string += f", noté {self.mark}/10"
         if self.series is not None:
-            display_string += f" ({self.series})"
+            display_string += f" <i>({self.series})</i>"
         return display_string
 
     class Meta:
