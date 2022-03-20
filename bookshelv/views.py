@@ -7,7 +7,7 @@ from django.shortcuts import render
 # Create your views here.
 from django.http import HttpResponse, JsonResponse
 from django.template import loader
-from django.db.models import Max, Q, Value
+from django.db.models import Max, Q, Value, Count
 from django.db.models.functions import Lower, Concat
 from .form import AddBookForm
 from .models import Author, Book, Base
@@ -119,7 +119,8 @@ def series_entry(request):
     logger.info("Loading the series list page")
     series_list = Book.objects.filter(series__isnull=False).distinct("series").values_list("series", flat=True)
     context = {"nb_series": len(list(series_list)), "series_list": list(series_list)}
-    return render(request,"bookshelv/display_series.html", context)
+    return render(request, "bookshelv/display_series.html", context)
+
 
 def series_list(request):
     logger.info("Accessing the series")
@@ -133,3 +134,46 @@ def series_list(request):
     logger.info(f"{nb_series} series found")
     context = {"nb_series": nb_series, "series_list": list(series_list)}
     return render(request, "bookshelv/series_list.html", context)
+
+
+## charting views
+
+def small_author_bar_chart_view(request):
+    logger.info("Building the bar chart")
+    labels, data = [], []
+    queryset = Base.objects.values("author_id").annotate(
+        full_name=Concat("author__firstname", Value(" "), "author__lastname")).annotate(count=Count("book_id")).values(
+        "full_name", "count").order_by("-count")[:10]
+    for mauthor in queryset:
+        labels.append(mauthor["full_name"])
+        data.append(mauthor["count"])
+    context = {
+        'labels': labels,
+        'data': data,
+    }
+    # return render(request, 'bookshelv/small_author_bar_chart.html', context)
+    return JsonResponse(data={
+        'labels': labels,
+        'data': data,
+    })
+
+def category_chart(request):
+    logger.info("Building the category chart")
+    labels, data = [], []
+    queryset = Book.objects.values("type").annotate(count=Count("type"))
+    type_list = ["Roman", "Documentaire", "BD/Manga", "Poésie"]
+    for element in queryset:
+        labels.append(type_list[element["type"]])
+        data.append(element["count"])
+    context = {
+        'labels': labels,
+        'data': data,
+    }
+    # return render(request, 'bookshelv/category_pie_chart.html', context)
+    return JsonResponse(data={
+        'labels': labels,
+        'data': data,
+    })
+
+def display_charting_page(request):
+    return render(request, 'bookshelv/charting.html')

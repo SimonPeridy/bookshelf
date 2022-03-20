@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="{{ STATIC_URL }}/static/jquery.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}/static/bootstrap-5.1.3/js/bootstrap.js"></script>
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}/static/bootstrap-5.1.3/css/bootstrap.css"/>
+    <link rel="icon" href="{{ STATIC_URL }}/static/favicon.ico"/>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+    <meta charset="UTF-8">
+    <title>Un titre intéressant</title>
+<!--    {% include "bookshelv/home_button.html" %}-->
+</head>
+
+
+
+  <div id="container" style="width: 75%;">
+<!--    <canvas id="pie-chart"></canvas>-->
+  </div>
+<div style="width: 100%;">
+    <canvas id="my-bar-chart" data-url="{% url 'small_author_bar_chart' %}"></canvas>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+
+<script>
+
+    $(function () {
+
+      var $populationChart = $("#my-bar-chart");
+      $.ajax({
+        url: $populationChart.data("url"),
+        success: function (data) {
+          console.log(data)
+          var ctx = $populationChart[0].getContext("2d");
+
+          new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels: data.labels,
+              datasets: [{
+                label: 'Auteurs',
+                backgroundColor: ['#696969', '#808080', '#A9A9A9', '#C0C0C0', '#D3D3D3'],
+                data: data.data
+              }]
+            },
+            options: {
+               scales: {
+        yAxes: [{
+            display: true,
+            ticks: {
+                suggestedMin: 0,    // minimum will be 0, unless there is a lower value.
+                // OR //
+                beginAtZero: true   // minimum value will be 0.
+            }
+        }]
+    },
+              responsive: true,
+              legend: {
+                position: 'top',
+              },
+              title: {
+                display: true,
+                text: 'Vos auteurs les plus lus'
+              }
+            }
+          });
+
+        }
+      });
+
+    });
+
+  </script>
+
+
+
+
+<!--  <script>-->
+
+<!--    var config = {-->
+<!--      type: 'bar',-->
+<!--      data: {-->
+<!--        datasets: [{-->
+<!--          data: {{ data|safe }},-->
+<!--          backgroundColor: [-->
+<!--            '#696969', '#808080', '#A9A9A9', '#C0C0C0', '#D3D3D3'-->
+<!--          ],-->
+<!--          label: 'Auteurs'-->
+<!--        }],-->
+<!--        labels: {{ labels|safe }}-->
+<!--      },-->
+<!--      options: {-->
+<!--        responsive: true-->
+<!--      }-->
+<!--    };-->
+
+<!--    window.onload = function() {-->
+<!--      var ctx = document.getElementById('pie-chart').getContext('2d');-->
+<!--      window.myPie = new Chart(ctx, config);-->
+<!--    };-->
+
+  </script>
