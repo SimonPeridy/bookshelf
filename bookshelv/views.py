@@ -7,10 +7,11 @@ from django.shortcuts import render
 # Create your views here.
 from django.http import HttpResponse, JsonResponse
 from django.template import loader
-from django.db.models import Max, Q, Value, Count
+from django.db.models import Max, Q, Value, Count, Avg, Func
 from django.db.models.functions import Lower, Concat
 from .form import AddBookForm
 from .models import Author, Book, Base
+from .utils import Round2
 
 
 def index(request):
@@ -151,17 +152,34 @@ def small_author_bar_chart_view(request):
         'labels': labels,
         'data': data,
     }
-    # return render(request, 'bookshelv/small_author_bar_chart.html', context)
+    return JsonResponse(data=context)
+
+
+def best_author_bar_chart_view(request):
+    logger.info("Building the best author bar chart")
+    labels, data = [], []
+    queryset = Base.objects.values("author_id").exclude(
+        book__mark__isnull=True).annotate(
+        full_name=Concat("author__firstname", Value(" "), "author__lastname")).annotate(avg=Round2(Avg("book__mark"))).values(
+        "full_name", "avg").order_by("-avg")[:10]
+    for element in queryset:
+        labels.append(element["full_name"])
+        data.append(element["avg"])
+    context = {
+        'labels': labels,
+        'data': data,
+    }
     return JsonResponse(data={
         'labels': labels,
         'data': data,
     })
 
+
 def category_chart(request):
     logger.info("Building the category chart")
     labels, data = [], []
     queryset = Book.objects.values("type").annotate(count=Count("type"))
-    type_list = ["Roman", "Documentaire", "BD/Manga", "Poésie"]
+    type_list = ["Roman", "Documentaire", "BD / Manga", "Poésie"]
     for element in queryset:
         labels.append(type_list[element["type"]])
         data.append(element["count"])
@@ -174,6 +192,7 @@ def category_chart(request):
         'labels': labels,
         'data': data,
     })
+
 
 def display_charting_page(request):
     return render(request, 'bookshelv/charting.html')

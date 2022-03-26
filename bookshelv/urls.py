@@ -13,6 +13,7 @@ urlpatterns = [
     path('add_book/get_authors/', views.get_authors, name='get_authors'),
     path('add_book/get_series/', views.get_series, name='get_series'),
     path('author-bar-chart/', views.small_author_bar_chart_view, name='small_author_bar_chart'),
+    path('best-author-bar-chart/', views.best_author_bar_chart_view, name='best_author_bar_chart'),
     path('category-pie-chart/', views.category_chart, name='category_pie_chart'),
     path('charts/', views.display_charting_page, name='charts')
 ]
