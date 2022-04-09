@@ -11,5 +11,5 @@ class AddBookForm(forms.Form):
     mark = forms.ChoiceField(label="Note", choices=mark_list)
     language_list = (("french", "Français"), ("english", "Anglais"))
     language = forms.ChoiceField(label="Langue", choices=language_list, widget=forms.Select)
-    series = forms.CharField(label="Série")
-    series_number = forms.IntegerField(label="Numéro", min_value=1)
+    series = forms.CharField(label="Série", required=False)
+    series_number = forms.IntegerField(label="Numéro", min_value=1, required=False)

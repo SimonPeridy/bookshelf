@@ -82,11 +82,15 @@ def add_book(request):
         form = AddBookForm(request.POST)
         if form.is_valid():
             logger.info("Form is valid")
+            if form.cleaned_data["series"] == "":
+                series = None
+            else:
+                series = form.cleaned_data["series"]
             new_book_id = Book.objects.values_list("id", flat=True).aggregate(Max("id"))["id__max"] + 1
             new_book = Book.objects.create(title=form.cleaned_data["title"], id=new_book_id,
                                            format=form.cleaned_data["ebook"], mark=form.cleaned_data["mark"],
                                            type=form.cleaned_data["type"], date_end_reading=datetime.date.today(),
-                                           series=form.cleaned_data["series"],
+                                           series=series,
                                            series_number=form.cleaned_data["series_number"],
                                            language=form.cleaned_data["language"])
             new_book.save()
@@ -96,7 +100,8 @@ def add_book(request):
             if len(author_object) == 1:
                 author_id = author_object[0].id
             else:
-                author_id = Author.objects.aggregate(Max("id"))
+                author_id = Author.objects.aggregate(Max("id"))["id__max"]
+                logger.debug(author_id)
                 new_author = Author.objects.create(firstname=author_firstname, lastname=author_lastname,
                                                    id=author_id + 1)
                 new_author.save()
@@ -108,7 +113,7 @@ def add_book(request):
             context = {"title": new_book.title}
             return render(request, "bookshelv/validation.html", context)
         else:
-            logger.info("Something was wrong in the form")
+            logger.info("Something was wrong in the form : {}".format(form.errors))
             form = AddBookForm()
             return render(request, 'bookshelv/add_book.html', {'form': form})
     else:
