@@ -15,6 +15,7 @@ from .utils import Round2
 
 
 def index(request):
+    logger.info("Requesting index page...")
     nb_books = Book.objects.all().count()
     context = {"nb_books": nb_books}
     return render(request, 'bookshelv/index.html', context)
@@ -40,7 +41,7 @@ def search(request):
         context = {"author_list": author_list, "book_list": book_list, "nb_authors": nb_authors, "nb_books": nb_books,
                    "formatted_list": formatted_list}
 
-        logger.info(f"{nb_authors} authors and {nb_books} found corresponding to the search")
+        logger.info(f"{nb_authors} authors and {nb_books} found")
         return render(request, 'bookshelv/search.html', context)
     else:
         author_list = list(Author.objects.order_by("lastname", "firstname"))
@@ -51,6 +52,7 @@ def search(request):
         formatted_list = zip(author_list, book_list)
         context = {"author_list": author_list, "book_list": book_list, "nb_authors": nb_authors, "nb_books": nb_books,
                    "formatted_list": formatted_list}
+        logger.info("All books and authors returned")
         return render(request, 'bookshelv/author_list.html', context)
 
 
@@ -101,7 +103,6 @@ def add_book(request):
                 author_id = author_object[0].id
             else:
                 author_id = Author.objects.aggregate(Max("id"))["id__max"]
-                logger.debug(author_id)
                 new_author = Author.objects.create(firstname=author_firstname, lastname=author_lastname,
                                                    id=author_id + 1)
                 new_author.save()
@@ -118,18 +119,19 @@ def add_book(request):
             return render(request, 'bookshelv/add_book.html', {'form': form})
     else:
         form = AddBookForm()
+        logger.info("Generating the form...")
         return render(request, 'bookshelv/add_book.html', {'form': form})
 
 
 def series_entry(request):
-    logger.info("Loading the series list page")
+    logger.info("Loading the series list page...")
     series_list = Book.objects.filter(series__isnull=False).distinct("series").values_list("series", flat=True)
     context = {"nb_series": len(list(series_list)), "series_list": list(series_list)}
     return render(request, "bookshelv/display_series.html", context)
 
 
 def series_list(request):
-    logger.info("Accessing the series")
+    logger.info("Accessing the series...")
     if request.POST.get("series_name") != None and request.POST.get("series_name") != "":
         series_list = Book.objects.filter(
             Q(series__isnull=False) & Q(series__icontains=request.POST.get("series_name"))).distinct(
@@ -142,7 +144,7 @@ def series_list(request):
     return render(request, "bookshelv/series_list.html", context)
 
 
-## charting views
+# charting views
 
 def small_author_bar_chart_view(request):
     logger.info("Building the bar chart")
@@ -165,7 +167,8 @@ def best_author_bar_chart_view(request):
     labels, data = [], []
     queryset = Base.objects.values("author_id").exclude(
         book__mark__isnull=True).annotate(
-        full_name=Concat("author__firstname", Value(" "), "author__lastname")).annotate(avg=Round2(Avg("book__mark"))).values(
+        full_name=Concat("author__firstname", Value(" "), "author__lastname")).annotate(
+        avg=Round2(Avg("book__mark"))).values(
         "full_name", "avg").order_by("-avg")[:10]
     for element in queryset:
         labels.append(element["full_name"])
@@ -174,10 +177,7 @@ def best_author_bar_chart_view(request):
         'labels': labels,
         'data': data,
     }
-    return JsonResponse(data={
-        'labels': labels,
-        'data': data,
-    })
+    return JsonResponse(data=context)
 
 
 def category_chart(request):
@@ -192,11 +192,7 @@ def category_chart(request):
         'labels': labels,
         'data': data,
     }
-    # return render(request, 'bookshelv/category_pie_chart.html', context)
-    return JsonResponse(data={
-        'labels': labels,
-        'data': data,
-    })
+    return JsonResponse(data=context)
 
 
 def display_charting_page(request):
