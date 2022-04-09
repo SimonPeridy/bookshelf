@@ -1,14 +1,17 @@
 services:
   db:
-    image: postgres:13.6-alpine
+    image: postgres:13.6
     container_name: postgre-database
-    command:
-      - sh "/var/lib/postgresql/data/pg_restore -U postgres -p 5432 -d bookshelf tarformat.sql
+#    command:
+#      - /var/lib/postgresql/bin/postgres -c logging_collector=on -c log_destination=stderr -c log_directory=/logs
+#      - sh "/var/lib/postgresql/data/pg_restore -U postgres -p 5432 -d bookshelf tarformat.sql
     volumes:
-      - ./data/db:/var/lib/postgresql/data
+      - ./my_pg_data:/var/lib/postgresql/data
+      - ./logs:/logs
+      - ./db_export:/home
     environment:
       - POSTGRES_USER=postgres
-      - POSTGRES_NAME=bookshelf
+      - POSTGRES_DB=bookshelf
       - POSTGRES_PASSWORD=root
       - POSTGRES_HOST=db
       - POSTGRES_PORT=5432
@@ -30,3 +33,5 @@ services:
     depends_on:
       - db
 
+volumes:
+  postgresVolume:
