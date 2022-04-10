@@ -11,7 +11,7 @@ from django.db.models import Max, Q, Value, Count, Avg, Func
 from django.db.models.functions import Lower, Concat
 from .form import AddBookForm
 from .models import Author, Book, Base
-from .utils import Round2
+from .utils import Round2, get_cover_address
 
 
 def index(request):
@@ -111,7 +111,8 @@ def add_book(request):
             base_object = Base.objects.create(id=new_base_id, author_id=author_id, book_id=new_book.id)
             base_object.save()
             logger.info("Link between the book and the author added")
-            context = {"title": new_book.title}
+            cover_address = get_cover_address(new_book.title)
+            context = {"title": new_book.title, "cover_address": cover_address}
             return render(request, "bookshelv/validation.html", context)
         else:
             logger.info("Something was wrong in the form : {}".format(form.errors))
