@@ -4,24 +4,24 @@
         {% if forloop.counter == 1 and nb_series == 1 %}
 
         <button class="align-self-start list-group-item list-group-item-action list-group-item-secondary rounded"
-                onclick="document.getElementById('form-book').value='{{ book.title }}';launch_search()">
+                onclick="document.getElementById('form-series').value='{{ series }}';searchSeries('{{ series | safe }}')">
             {{ series }}
         </button>
         {% else %}
         {% if forloop.counter == 1 %}
         <button class="align-self-start list-group-item list-group-item-action list-group-item-secondary rounded-top"
-                onclick="document.getElementById('form-book').value='{{ book.title }}';launch_search()">
+                onclick="document.getElementById('form-series').value='{{ series }}';searchSeries('{{ series | safe }}')">
             {{ series }}
         </button>
         {% else %}
         {% if forloop.counter < nb_series %}
         <button class="align-self-start list-group-item list-group-item-action list-group-item-secondary rounded-0"
-                onclick="document.getElementById('form-book').value='{{ book.title }}';launch_search()">
+                onclick="document.getElementById('form-series').value='{{ series }}';searchSeries('{{ series | safe }}')">
             {{ series }}
         </button>
         {% else %}
         <button class="align-self-start list-group-item list-group-item-action list-group-item-secondary rounded-bottom"
-                onclick="document.getElementById('form-book').value='{{ book.title }}';launch_search()">
+                onclick="document.getElementById('form-series').value='{{ series }}';searchSeries('{{ series | safe }}')">
             {{ series }}
         </button>
         {% endif %}

@@ -1,0 +1,27 @@
+{% for book in series_list %}
+{% if forloop.counter == 1 and nb_series == 1 %}
+<a class="align-self-start list-group-item list-group-item-action list-group-item-primary rounded"
+        onclick="document.getElementById('form-book').value='{{ book.title }}';launch_search()">
+    {{ book.title|safe }}, <i>{{ book.series_number }}</i>
+</a>
+{% else %}
+{% if forloop.counter == 1 %}
+<a class="align-self-start list-group-item list-group-item-action list-group-item-primary rounded-top"
+        onclick="document.getElementById('form-book').value='{{ book.title }}';launch_search()">
+    {{ book.title|safe }}, <i>{{ book.series_number }}</i>
+</a>
+{% else %}
+{% if forloop.counter < nb_series %}
+<a class="align-self-start list-group-item list-group-item-action list-group-item-primary rounded-0"
+        onclick="document.getElementById('form-book').value='{{ book.title }}';launch_search()">
+    {{ book.title|safe }}, <i>{{ book.series_number }}</i>
+</a>
+{% else %}
+<a class="align-self-start list-group-item list-group-item-action list-group-item-primary rounded-bottom"
+        onclick="document.getElementById('form-book').value='{{ book.title }}';launch_search()">
+    {{ book.title|safe }}, {{ book.series_number }}
+</a>
+{% endif %}
+{% endif %}
+{% endif %}
+{% endfor %}

@@ -133,16 +133,29 @@ def series_entry(request):
 
 def series_list(request):
     logger.info("Accessing the series...")
-    if request.POST.get("series_name") != None and request.POST.get("series_name") != "":
+    # variable to know if the name of the series is exact (to know if we are returning books or series
+    is_exact = False
+    if request.POST.get("series_name") is not None and request.POST.get("series_name") != "":
         series_list = Book.objects.filter(
-            Q(series__isnull=False) & Q(series__icontains=request.POST.get("series_name"))).distinct(
-            "series").values_list("series", flat=True)
+            Q(series__isnull=False) & Q(series__exact=request.POST.get("series_name"))).order_by(
+            "series_number").values("title", "series_number")
+        if len(series_list) > 0:
+            is_exact = True
+        else:
+            series_list = Book.objects.filter(
+                Q(series__isnull=False) & Q(series__icontains=request.POST.get("series_name"))).distinct(
+                "series").order_by("series").values_list("series", flat=True)
     else:
-        series_list = Book.objects.filter(series__isnull=False).distinct("series").values_list("series", flat=True)
+        series_list = Book.objects.filter(series__isnull=False).distinct("series").order_by("series").values_list(
+            "series", flat=True)
     nb_series = len(list(series_list))
-    logger.info(f"{nb_series} series found")
-    context = {"nb_series": nb_series, "series_list": list(series_list)}
-    return render(request, "bookshelv/series_list.html", context)
+    context = {"nb_series": nb_series, "series_list": list(series_list), "is_exact": is_exact}
+    if is_exact:
+        logger.info(f"{nb_series} books found for the series {request.POST.get('series_name')}")
+        return render(request, "bookshelv/display_books_in_series.html", context)
+    else:
+        logger.info(f"{nb_series} series found")
+        return render(request, "bookshelv/series_list.html", context)
 
 
 # charting views
