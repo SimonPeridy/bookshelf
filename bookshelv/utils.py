@@ -1,3 +1,5 @@
+import re
+
 from django.db.models import Func
 import requests
 from bs4 import BeautifulSoup as bs
@@ -32,6 +34,7 @@ def get_cover_address(book_title: str) -> str:
     # for book in books:
     #     print(next(int(i) for i in book.find("span", attrs={"class":"greyText smallText uitext"}).contents[2].split() if i.isdigit()))
     cover_address = soup.find("img", attrs={"class": "bookCover"})["src"]
+    cover_address = re.sub(r'\._SX\d*_', r"", cover_address)
     # returns the address of the picture's cover of the first goodreads result for the book
     logger.info(f"Book cover is {cover_address}")
     return cover_address
