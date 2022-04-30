@@ -1,27 +1,31 @@
+version: "3.9"
+
 services:
   db:
     image: postgres:13.6
-    container_name: postgre-database
-#    command:
-#      - /var/lib/postgresql/bin/postgres -c logging_collector=on -c log_destination=stderr -c log_directory=/logs
-#      - sh "/var/lib/postgresql/data/pg_restore -U postgres -p 5432 -d bookshelf tarformat.sql
+    container_name: postgres-database
     volumes:
-      - ./my_pg_data:/var/lib/postgresql/data
-      - ./logs:/logs
-      - ./db_export:/home
+      - ./db_export:/docker-entrypoint-initdb.d
+#      - type: volume
+#        source: db_export
+#        target: /home/db_export
+#        volume:
+#          - nocopy: true
+#      - postgresVolume:/home/my_pg_data
+#      - ./logs:/logs
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_DB=bookshelf
       - POSTGRES_PASSWORD=root
       - POSTGRES_HOST=db
       - POSTGRES_PORT=5432
-#      pg_restore -U postgres -p 5432 -d bookshelf tarformat.sql
+    ports:
+      - "5432:5432"
   web:
     build: .
     container_name: web-container
-    command: python manage.py runserver 0.0.0.0:8000
-    volumes:
-      - .:/code
+#    volumes:
+#      - ./:/code
     ports:
       - "8000:8000"
     environment:
@@ -30,8 +34,9 @@ services:
       - POSTGRES_PASSWORD=root
       - POSTGRES_HOST=db
       - POSTGRES_PORT=5432
+    command: ls #&& echo "saaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaep" && python manage.py runserver 0.0.0.0:8000
     depends_on:
       - db
 
 volumes:
-  postgresVolume:
+  db_export:
