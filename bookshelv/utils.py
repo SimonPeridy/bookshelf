@@ -11,10 +11,11 @@ class Round2(Func):
     template = "%(function)s(%(expressions)s::numeric, 2)"
 
 
-def get_page(base_url, data):
+def get_page(base_url: str, data: dict) -> requests.Response:
     try:
         headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36'}
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36"
+        }
         r = requests.get(base_url, headers=headers, params=data)
     except:
         r = None
@@ -29,12 +30,13 @@ def get_cover_address(book_title: str) -> str:
     """
     data = {"q": book_title}
     book_url = get_page("https://www.goodreads.com/search", data)
-    soup = bs(book_url.text, 'html.parser')
+    soup = bs(book_url.text, "html.parser")
     # books = soup.findAll("tr", attrs={"itemtype": "http://schema.org/Book"})
     # for book in books:
     #     print(next(int(i) for i in book.find("span", attrs={"class":"greyText smallText uitext"}).contents[2].split() if i.isdigit()))
     cover_address = soup.find("img", attrs={"class": "bookCover"})["src"]
-    cover_address = re.sub(r'\._SX\d*_', r"", cover_address)
+    cover_address = re.sub(r"\._SX\d*_", r"", cover_address)
+    cover_address = re.sub(r"\._SY\d*_", r"", cover_address)
     # returns the address of the picture's cover of the first goodreads result for the book
     logger.info(f"Book cover is {cover_address}")
     return cover_address

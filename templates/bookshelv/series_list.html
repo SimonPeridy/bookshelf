@@ -4,29 +4,30 @@
         {% if forloop.counter == 1 and nb_series == 1 %}
 
         <button class="align-self-start list-group-item list-group-item-action list-group-item-secondary rounded"
-                onclick="document.getElementById('form-series').value='{{ series }}';searchSeries('{{ series | safe }}')">
+            onclick="document.getElementById('form-series').value='{{ series }}';searchSeries('{{ series | safe }}')">
             {{ series | safe }}
         </button>
         {% else %}
         {% if forloop.counter == 1 %}
         <button class="align-self-start list-group-item list-group-item-action list-group-item-secondary rounded-top"
-                onclick="document.getElementById('form-series').value='{{ series }}';searchSeries('{{ series | safe }}')">
-            {{ series | safe  }}
+            onclick="document.getElementById('form-series').value='{{ series }}';searchSeries('{{ series | safe }}')">
+            {{ series | safe }}
         </button>
         {% else %}
-        {% if forloop.counter < nb_series %}
-        <button class="align-self-start list-group-item list-group-item-action list-group-item-secondary rounded-0"
-                onclick='console.log("{{ series | safe }}");document.getElementById("form-series").value="{{ series }}";searchSeries("{{ series | safe }}")'>
-            {{ series | safe  }}
-        </button>
-        {% else %}
-        <button class="align-self-start list-group-item list-group-item-action list-group-item-secondary rounded-bottom"
+        {% if forloop.counter < nb_series %} <button
+            class="align-self-start list-group-item list-group-item-action list-group-item-secondary rounded-0"
+            onclick='document.getElementById("form-series").value="{{ series }}";searchSeries("{{ series | safe }}")'>
+            {{ series | safe }}
+            </button>
+            {% else %}
+            <button
+                class="align-self-start list-group-item list-group-item-action list-group-item-secondary rounded-bottom"
                 onclick="document.getElementById('form-series').value='{{ series }}';searchSeries('{{ series | safe }}')">
-            {{ series | safe  }}
-        </button>
-        {% endif %}
-        {% endif %}
-        {% endif %}
+                {{ series | safe }}
+            </button>
+            {% endif %}
+            {% endif %}
+            {% endif %}
 
     </div>
 </div>

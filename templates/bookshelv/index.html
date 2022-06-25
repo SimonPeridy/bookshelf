@@ -1,49 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <script type="text/javascript" src="{{ STATIC_URL }}/static/bootstrap-5.1.3/js/bootstrap.js"></script>
-    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}/static/bootstrap-5.1.3/css/bootstrap.css"/>
-    <link rel="icon" href="{{ STATIC_URL }}/static/favicon.ico"/>
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}/static/bootstrap-5.1.3/css/bootstrap.css" />
+    <link rel="icon" href="{{ STATIC_URL }}/static/favicon.ico" />
     <meta charset="UTF-8" content="text/html;charset=UTF-8">
     <title>Liste de livres</title>
-    <header>
-        <h1 style="text-align: center">Ma bibliothèque</h1>
-    </header>
 </head>
+
 <body>
-<h3 class="d-flex justify-content-center text-secondary">{{ nb_books }} livres lus à ce jour</h3>
-<div class="container" id="search-div" style="margin-top: 7%;">
-    <div class="btn-group">
-        <div class="form-row">
-            <div class="d-flex flex-row align-items-center justify-content-between flex-wrap">
-                <div class="p-2">
-                    <form action="add_book" method="get">
-                        <input type="submit" value="Ajouter un livre" class="btn btn-primary btn-lg"
-                               style="min-width: 250px;">
-                    </form>
-                </div>
-                <div class="p-2">
-
-                    <form action="author_list" method="get">
-                        <input type="submit" value="Consulter votre liste" class="btn btn-primary btn-lg"
-                               style="min-width: 250px;">
-                    </form>
-                </div>
-                <div class="p-2">
-
-                    <form action="series_entry" method="get">
-                        <input type="submit" value="Consulter vos séries" class="btn btn-primary btn-lg"
-                               style="min-width: 250px;">
-                    </form>
-                </div>
-                <div class="p-2">
-
-                    <form action="charts" method="get">
-                        <input type="submit" value="Data viz" class="btn btn-primary btn-lg"
-                               style="min-width: 250px;">
-                    </form>
-                </div>
+    <div class="container flexbox">
+        <div class="row align-items-center justify-content-between flex-wrap">
+            <div class="col-6">
+                <h1 class="d-flex justify-content-center">Ma bibliothèque</h1>
+                <h3 class="d-flex justify-content-center text-secondary">{{ nb_books }} livres lus à ce jour</h3>
+            </div>
+            <div class="col-6">
+                {% include "bookshelv/category_pie_chart.html" %}
             </div>
         </div>
+    </div>
+
+    <div class="container" id="search-div" style="margin-top: 2%;">
+        <div class="d-flex align-items-center justify-content-between flex-wrap">
+            <div class="p-2">
+                <form action="add_book" method="get">
+                    <input type="submit" value="Ajouter un livre" class="btn btn-primary btn-lg"
+                        style="min-width: 250px;">
+                </form>
+            </div>
+            <div class="p-2">
+                <form action="author_list" method="get">
+                    <input type="submit" value="Consulter votre liste" class="btn btn-primary btn-lg"
+                        style="min-width: 250px;">
+                </form>
+            </div>
+            <div class="p-2">
+                <form action="series_entry" method="get">
+                    <input type="submit" value="Consulter vos séries" class="btn btn-primary btn-lg"
+                        style="min-width: 250px;">
+                </form>
+            </div>
+        </div>
+    </div>
+    {% include "bookshelv/charting.html" %}
+
 </body>
+
 </html>
