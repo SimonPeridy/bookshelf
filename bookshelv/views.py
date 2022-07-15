@@ -165,7 +165,9 @@ def add_book(request):
             )
             base_object.save()
             logger.info("Link between the book and the author added")
-            cover_address = get_cover_address(new_book.title)
+            cover_address = get_cover_address(
+                new_book.title, author_lastname + " " + author_firstname, series
+            )
             context = {"title": new_book.title, "cover_address": cover_address}
             return render(request, "bookshelv/validation.html", context)
         else:

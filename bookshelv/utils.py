@@ -22,13 +22,13 @@ def get_page(base_url: str, data: dict) -> requests.Response:
     return r
 
 
-def get_cover_address(book_title: str) -> str:
+def get_cover_address(book_title: str, author: str, series: str) -> str:
     """
     Function returning the first cover associated to the book on Goodreads
     :param book_title: the title of the book
     :return: the address of the cover picture
     """
-    data = {"q": book_title}
+    data = {"q": [book_title, author, series].join("")}
     book_url = get_page("https://www.goodreads.com/search", data)
     soup = bs(book_url.text, "html.parser")
     # books = soup.findAll("tr", attrs={"itemtype": "http://schema.org/Book"})
