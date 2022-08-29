@@ -146,7 +146,7 @@ def add_book(request):
             if len(author_object) == 1:
                 author_id = author_object[0].id
             else:
-                author_id = Author.objects.aggregate(Max("id"))["id__max"]
+                author_id = Author.objects.aggregate(Max("id"))["id__max"] + 1
                 new_author = Author.objects.create(
                     firstname=author_firstname,
                     lastname=author_lastname,
@@ -166,7 +166,9 @@ def add_book(request):
             base_object.save()
             logger.info("Link between the book and the author added")
             cover_address = get_cover_address(
-                new_book.title, author_lastname + " " + author_firstname, series
+                new_book.title,
+                author_lastname + " " + author_firstname,
+                series if series is not None else "",
             )
             context = {"title": new_book.title, "cover_address": cover_address}
             return render(request, "bookshelv/validation.html", context)

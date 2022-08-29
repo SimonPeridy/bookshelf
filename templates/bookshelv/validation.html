@@ -1,14 +1,17 @@
 <html>
+
 <head>
-    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}/static/bootstrap-5.1.3/css/bootstrap.css"/>
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}/static/bootstrap-5.1.3/css/bootstrap.css" />
     <title>Statut</title>
     {% include "bookshelv/home_button.html" %}
 
 </head>
+
 <body>
-<h5 class="text-success text-center">Votre livre {{ title }} a bien été ajouté à la base de données.</h5>
-<div class="text-center">
-    <img class="text-center" src="{{cover_address}}">
-</div>
+    <h5 class="text-success text-center">Votre livre {{ title }} a bien été ajouté à la base de données.</h5>
+    <div class="text-center">
+        <img class="text-center" style="width:60%" src="{{cover_address}}">
+    </div>
 </body>
+
 </html>
