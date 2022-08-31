@@ -150,7 +150,7 @@ def add_book(request):
                 new_author = Author.objects.create(
                     firstname=author_firstname,
                     lastname=author_lastname,
-                    id=author_id + 1,
+                    id=author_id,
                 )
                 new_author.save()
                 logger.info("Author created")
