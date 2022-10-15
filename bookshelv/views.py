@@ -18,6 +18,9 @@ def index(request):
     logger.info("Requesting index page...")
     nb_books = Book.objects.all().count()
     context = {"nb_books": nb_books}
+    best_author_datas = best_author_bar_chart_view(request)
+    context = {**context, **best_author_datas}
+    logger.info(f"Context : {context}")
     return render(request, "bookshelv/index.html", context)
 
 
@@ -212,8 +215,8 @@ def series_list(request):
         if len(series_list) > 0:
             is_exact = True
         else:
-            series_list = (
-                Book.objects.filter(
+            Book.objects.filter(
+                series_list=(
                     Q(series__isnull=False)
                     & Q(series__icontains=request.POST.get("series_name"))
                 )
@@ -268,8 +271,14 @@ def small_author_bar_chart_view(request):
 
 
 def best_author_bar_chart_view(request):
+    from bokeh.plotting import figure
+    from bokeh.embed import components
+    from bokeh.models import FactorRange
+    from bokeh.models.tickers import FixedTicker
+
     logger.info("Building the best marked author bar chart")
-    labels, data = [], []
+    # create a plot
+
     queryset = (
         Base.objects.values("author_id")
         .exclude(book__mark__isnull=True)
@@ -278,14 +287,33 @@ def best_author_bar_chart_view(request):
         .values("full_name", "avg")
         .order_by("-avg")[:10]
     )
+    labels, data = [], []
     for element in queryset:
         labels.append(element["full_name"])
         data.append(element["avg"])
-    context = {
-        "labels": labels,
-        "data": data,
-    }
-    return JsonResponse(data=context)
+
+    plot = figure(
+        toolbar_location=None,
+        x_range=FactorRange(factors=labels),
+        height=300,
+        width=400,
+    )
+    from math import pi
+
+    plot.yaxis.axis_label = "Note moyenne"
+    plot.yaxis.ticker = list(range(1, 11))
+    plot.xaxis.major_label_orientation = pi / 4
+    plot.yaxis.bounds = (0, 10)
+    plot.xaxis.major_tick_line_width = 0
+    plot.y_range.range_padding = 0
+    plot.vbar(x=labels, top=data, width=0.5)
+
+    script, div = components(plot)
+    # return render(
+    #     request, "bookshelv/best_author_bar_chart.html", {"script": script, "div": div}
+    # )
+    # return JsonResponse(data={"script": script, "div": div})
+    return {"script": script, "div": div}
 
 
 def category_chart(request):
