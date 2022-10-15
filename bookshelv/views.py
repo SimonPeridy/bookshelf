@@ -12,6 +12,13 @@ from django.db.models.functions import Lower, Concat
 from .form import AddBookForm
 from .models import Author, Book, Base
 from .utils import Round2, get_cover_address
+from bokeh.plotting import figure
+from bokeh.embed import components
+from bokeh.models import FactorRange, ColorBar, ColumnDataSource
+from bokeh.palettes import *
+from bokeh.models.tickers import FixedTicker
+from bokeh.transform import linear_cmap
+from math import pi
 
 
 def index(request):
@@ -19,8 +26,9 @@ def index(request):
     nb_books = Book.objects.all().count()
     context = {"nb_books": nb_books}
     best_author_datas = best_author_bar_chart_view(request)
-    context = {**context, **best_author_datas}
-    logger.info(f"Context : {context}")
+    number_books_read_by_author = small_author_bar_chart_view(request)
+    context = {**context, **best_author_datas, **number_books_read_by_author}
+    logger.debug(f"Context : {context}")
     return render(request, "bookshelv/index.html", context)
 
 
@@ -263,19 +271,41 @@ def small_author_bar_chart_view(request):
     for mauthor in queryset:
         labels.append(mauthor["full_name"])
         data.append(mauthor["count"])
-    context = {
-        "labels": labels,
-        "data": data,
-    }
-    return JsonResponse(data=context)
+
+    plot = figure(
+        title="Nombre de livres lus par auteur",
+        toolbar_location=None,
+        x_range=FactorRange(factors=labels),
+        height=320,
+        width=400,
+    )
+
+    source = ColumnDataSource(dict(x=labels, y=data))
+    mapper = linear_cmap(
+        field_name="y",
+        palette=brewer["PuRd"][9][::-1][2:],
+        low=min(data),
+        high=max(data),
+    )
+
+    # plot.yaxis.axis_label = "Nombre de livres lus"
+    plot.xaxis.major_label_orientation = pi / 4
+    plot.xaxis.major_tick_line_width = 0
+    plot.y_range.range_padding = 0
+    plot.vbar(x="x", top="y", width=0.6, color=mapper, source=source)
+    plot.yaxis.minor_tick_line_width = 0
+    # plot.min_border_bottom = 20
+    # plot.min_border_top = 300
+
+    # color_bar = ColorBar(color_mapper=mapper["transform"], width=2)
+    # plot.add_layout(color_bar, "right")
+
+    script, div = components(plot)
+
+    return {"script2": script, "div2": div}
 
 
 def best_author_bar_chart_view(request):
-    from bokeh.plotting import figure
-    from bokeh.embed import components
-    from bokeh.models import FactorRange
-    from bokeh.models.tickers import FixedTicker
-
     logger.info("Building the best marked author bar chart")
     # create a plot
 
@@ -293,26 +323,33 @@ def best_author_bar_chart_view(request):
         data.append(element["avg"])
 
     plot = figure(
+        title="Note moyenne par auteur",
         toolbar_location=None,
         x_range=FactorRange(factors=labels),
         height=300,
         width=400,
     )
-    from math import pi
 
-    plot.yaxis.axis_label = "Note moyenne"
+    source = ColumnDataSource(dict(x=labels, y=data))
+
+    mapper = linear_cmap(
+        field_name="y",
+        palette=brewer["PuRd"][9][::-1][2:],
+        low=min(data),
+        high=max(data),
+    )
+
+    # plot.yaxis.axis_label = "Note moyenne"
     plot.yaxis.ticker = list(range(1, 11))
     plot.xaxis.major_label_orientation = pi / 4
     plot.yaxis.bounds = (0, 10)
     plot.xaxis.major_tick_line_width = 0
     plot.y_range.range_padding = 0
-    plot.vbar(x=labels, top=data, width=0.5)
+    # plot.min_border_bottom = 50
+    # plot.min_border_top = 300
+    plot.vbar(x="x", top="y", width=0.5, source=source, color=mapper)
 
     script, div = components(plot)
-    # return render(
-    #     request, "bookshelv/best_author_bar_chart.html", {"script": script, "div": div}
-    # )
-    # return JsonResponse(data={"script": script, "div": div})
     return {"script": script, "div": div}
 
 
