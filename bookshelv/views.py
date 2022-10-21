@@ -14,7 +14,7 @@ from .models import Author, Book, Base
 from .utils import Round2, get_cover_address
 from bokeh.plotting import figure
 from bokeh.embed import components
-from bokeh.models import FactorRange, ColorBar, ColumnDataSource
+from bokeh.models import FactorRange, ColorBar, ColumnDataSource, DataRange1d
 from bokeh.palettes import *
 from bokeh.models.tickers import FixedTicker
 from bokeh.transform import linear_cmap
@@ -223,8 +223,8 @@ def series_list(request):
         if len(series_list) > 0:
             is_exact = True
         else:
-            Book.objects.filter(
-                series_list=(
+            series_list = (
+                Book.objects.filter(
                     Q(series__isnull=False)
                     & Q(series__icontains=request.POST.get("series_name"))
                 )
@@ -315,8 +315,11 @@ def best_author_bar_chart_view(request):
         .annotate(full_name=Concat("author__firstname", Value(" "), "author__lastname"))
         .annotate(avg=Round2(Avg("book__mark")))
         .values("full_name", "avg")
+        .annotate(count=Count("book__id"))
+        .filter(count__gte=3)
         .order_by("-avg")[:10]
     )
+    logger.info(queryset)
     labels, data = [], []
     for element in queryset:
         labels.append(element["full_name"])
@@ -326,6 +329,7 @@ def best_author_bar_chart_view(request):
         title="Note moyenne par auteur",
         toolbar_location=None,
         x_range=FactorRange(factors=labels),
+        y_range=DataRange1d(start=0, end=10, range_padding=0),
         height=300,
         width=400,
     )
@@ -342,7 +346,6 @@ def best_author_bar_chart_view(request):
     # plot.yaxis.axis_label = "Note moyenne"
     plot.yaxis.ticker = list(range(1, 11))
     plot.xaxis.major_label_orientation = pi / 4
-    plot.yaxis.bounds = (0, 10)
     plot.xaxis.major_tick_line_width = 0
     plot.y_range.range_padding = 0
     # plot.min_border_bottom = 50
