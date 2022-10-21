@@ -20,6 +20,8 @@ from bokeh.models.tickers import FixedTicker
 from bokeh.transform import linear_cmap
 from math import pi
 
+COVER_NOT_FOUND = "https://www.nypl.org/scout/_next/image?url=https%3A%2F%2Fdrupal.nypl.org%2Fsites-drupal%2Fdefault%2Ffiles%2Fstyles%2Fmax_width_960%2Fpublic%2Fblogs%2FJ5LVHEL.jpg%3Fitok%3DDkMp1Irh&w=1920&q=90"
+
 
 def index(request):
     logger.info("Requesting index page...")
@@ -181,7 +183,12 @@ def add_book(request):
                 author_lastname + " " + author_firstname,
                 series if series is not None else "",
             )
-            context = {"title": new_book.title, "cover_address": cover_address}
+            context = {
+                "title": new_book.title,
+                "cover_address": cover_address
+                if cover_address is not None
+                else COVER_NOT_FOUND,
+            }
             return render(request, "bookshelv/validation.html", context)
         else:
             logger.info("Something was wrong in the form : {}".format(form.errors))

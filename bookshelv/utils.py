@@ -34,9 +34,13 @@ def get_cover_address(*args) -> str:
     # books = soup.findAll("tr", attrs={"itemtype": "http://schema.org/Book"})
     # for book in books:
     #     print(next(int(i) for i in book.find("span", attrs={"class":"greyText smallText uitext"}).contents[2].split() if i.isdigit()))
-    cover_address = soup.find("img", attrs={"class": "bookCover"})["src"]
-    cover_address = re.sub(r"\._SX\d*_", r"", cover_address)
-    cover_address = re.sub(r"\._SY\d*_", r"", cover_address)
+    try:
+        cover_address = soup.find("img", attrs={"class": "bookCover"})["src"]
+        cover_address = re.sub(r"\._SX\d*_", r"", cover_address)
+        cover_address = re.sub(r"\._SY\d*_", r"", cover_address)
+    except TypeError:
+        logger.warning(f"No cover found for this books {args}")
+        cover_address = None
     # returns the address of the picture's cover of the first goodreads result for the book
     logger.info(f"Book cover is {cover_address}")
     return cover_address
