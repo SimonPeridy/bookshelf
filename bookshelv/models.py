@@ -16,11 +16,11 @@ class Author(models.Model):
     lastname = models.CharField(max_length=MAX_LENGTH)
 
     def __str__(self):
-        return self.firstname + " " + self.lastname
+        return self.lastname + ", " + self.firstname
 
     class Meta:
         managed = False
-        db_table = 'author'
+        db_table = "author"
 
 
 class Book(models.Model):
@@ -39,12 +39,12 @@ class Book(models.Model):
         if self.mark is not None:
             display_string += f", noté {self.mark}/10"
         if self.series is not None:
-            display_string += f" <i>({self.series})</i>"
+            display_string += f" <i>({self.series} {self.series_number})</i>"
         return display_string
 
     class Meta:
         managed = False
-        db_table = 'book'
+        db_table = "book"
 
 
 class Owner(models.Model):
@@ -53,7 +53,7 @@ class Owner(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'owner'
+        db_table = "owner"
 
 
 class Base(models.Model):
@@ -64,5 +64,5 @@ class Base(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'base'
-        unique_together = (('book_id', 'author_id'),)
+        db_table = "base"
+        unique_together = (("book_id", "author_id"),)
