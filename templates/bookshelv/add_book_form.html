@@ -1,33 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
 </head>
+
 <body>
-<form action="" method="post">
-    {% csrf_token %}
-    <div>
+    <form action="" method="post">
+        {% csrf_token %}
         <div>
-{#            {% for i in form.type %}#}
-                                <input type="radio" name="type" id="{{ i.id_for_label }}" value="{{ i.id_for_label }}">
-                                <label for="{{ i.id_for_label }}">{{ i.label }}</label>
-{#                <div>#}
-{#                    {{ i.label_tag }}#}
-{#                </div>#}
-{#            {% endfor %}#}
-{{ form.type.label }}
-{{ form.type }}
-            {#            {% for i, e in form.type.choices %}#}
-            {#                {{ e }} {{ i }}#}
-            {#                <input class="form-check-input" type="radio" name="type" id="{{ e }}" value="{{ i }}">#}
-            {#                                       checked=        {%   i == form.type.initial %}>#}
-            {#                <label class="form-check-label" for="{{ e }}">{{ e }}</label>#}
-            {#            {% endfor %}#}
+            <div>
+                {# {% for i in form.book_type %}#}
+                <input type="radio" name="book_type" id="{{ i.id_for_label }}" value="{{ i.id_for_label }}">
+                <label for="{{ i.id_for_label }}">{{ i.label }}</label>
+                {# <div>#}
+                    {# {{ i.label_tag }}#}
+                    {# </div>#}
+                {# {% endfor %}#}
+                {{ form.book_type.label }}
+                {{ form.book_type }}
+                {# {% for i, e in form.book_type.choices %}#}
+                {# {{ e }} {{ i }}#}
+                {# <input class="form-check-input" type="radio" name="booktype" id="{{ e }}" value="{{ i }}">#}
+                {# checked= {% i == form.book_type.initial %}>#}
+                {# <label class="form-check-label" for="{{ e }}">{{ e }}</label>#}
+                {# {% endfor %}#}
+            </div>
         </div>
-    </div>
-    {#        {{ form }}#}
-    <input type="submit" value="Submit">
-</form>
+        {# {{ form }}#}
+        <input type="submit" value="Submit">
+    </form>
 </body>
+
 </html>

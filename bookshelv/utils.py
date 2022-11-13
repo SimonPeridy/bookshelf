@@ -4,6 +4,7 @@ from django.db.models import Func
 import requests
 from bs4 import BeautifulSoup as bs
 from loguru import logger
+from typing import List, Union
 
 
 class Round2(Func):
@@ -44,3 +45,60 @@ def get_cover_address(*args) -> str:
     # returns the address of the picture's cover of the first goodreads result for the book
     logger.info(f"Book cover is {cover_address}")
     return cover_address
+
+
+#### google books api
+API_KEY = "AIzaSyD5MJGgqaVeZksjaE6qQX-qh2_CeV5VEtE"
+BOOK_SEARCH_URL = "https://www.googleapis.com/books/v1/volumes?"
+
+
+def search_book(
+    title: str,
+    author: str = None,
+    publisher: str = None,
+    subject: Union[List[str], str] = None,
+    isbn: str = None,
+):
+    if isbn is not None:
+        if len(isbn) in (10, 13):
+            return requests.get(BOOK_SEARCH_URL, {"q=isbn:" + isbn})
+        logger.info(f"ISBN length is {isbn} while it should be 10 or 13.")
+    search_string = "q=" + title
+    if author is not None:
+        search_string += "+inauthor:" + author
+    if publisher is not None:
+        search_string += "+inpublisher:" + publisher
+    if subject is not None:
+        subject = list(subject) if isinstance(subject, str) else subject
+        search_string += "".join("+subject:" + keyword for keyword in subject)
+    return requests.get(BOOK_SEARCH_URL + search_string)
+
+
+def get_the_book(
+    title: str,
+    author: str = None,
+    publisher: str = None,
+    subject: Union[List[str], str] = None,
+    isbn: str = None,
+) -> dict:
+    try:
+        books_request = search_book(title, author, publisher, subject, isbn)
+        books_request.raise_for_status()
+    except requests.exceptions.HTTPError as err:
+        logger.info(f"Error while requesting the book : {books_request.status_code}.")
+        logger.info(err)
+        raise SystemExit(err)  # TODO gérer l'erreur pour que le site ne plante pas
+    books_info = books_request.json()["items"][0]["volumeInfo"]
+    # on récupère l'isbn le plus long de la liste pour avoir l'isbn13 s'il existe, l'isbn10 autrement
+    isbn = sorted(
+        (e["identifier"] for e in books_info["industryIdentifiers"]),
+        key=lambda x: len(x),
+        reverse=True,
+    )[0]
+    return {
+        "title": books_info["title"],
+        "authors": books_info["authors"][
+            0
+        ],  # always the first author atm, maybe make it match if there is several authors later
+        "isbn": isbn,
+    }
