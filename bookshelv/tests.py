@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.test import TestCase
 
 from Bibliotheque.wsgi import *
@@ -61,7 +63,7 @@ class BookAddingTestCase(TestCase):
             series_number=None,
             mark=5,
             date_end_reading="2022-01-12",
-            reading_state="read",
+            reading_state="to be read",
             language="french",
         ).id
         b6_id = Book.objects.create(
@@ -149,6 +151,84 @@ class BookAddingTestCase(TestCase):
             result[i] == f"{authors[i][0]}, {authors[i][1]}" for i in range(len(result))
         )
 
-    def test_adding_book(self):
-        # to be continued
-        pass
+    def test_adding_book_new_book(self):
+        cleaned_data = {
+            "title": "Harry Potter 3",
+            "author_firstname": "J.K.",
+            "author_lastname": "Rowling",
+            "series": "Harry Potter",
+            "series_number": 3,
+            "is_ebook": True,
+            "book_type": 0,
+            "language": "french",
+            "mark": 4,
+            "reading_state": "read",
+        }
+        author, book, modification = adding_book(cleaned_data)
+        assert author.firstname == "J.K."
+        assert author.lastname == "Rowling"
+        assert book.title == "Harry Potter 3"
+        assert book.series_number == 3
+        assert book.series == "Harry Potter"
+        assert book.mark == 4
+        assert book.reading_state == "read"
+        assert book.language == "french"
+        assert book.is_ebook == True
+        assert book.book_type == 0
+        assert book.date_end_reading == date.today()
+        assert modification == "BOOK_ADDED"
+
+    def test_adding_book_new_book_new_author(self):
+        cleaned_data = {
+            "title": "Le petit Prince",
+            "author_firstname": "Antoine",
+            "author_lastname": "de Saint-Exupéry",
+            "series": None,
+            "series_number": None,
+            "is_ebook": False,
+            "book_type": 0,
+            "language": "french",
+            "mark": 7,
+            "reading_state": "reading",
+        }
+        author, book, modification = adding_book(cleaned_data)
+        assert author.firstname == "Antoine"
+        assert author.lastname == "de Saint-Exupéry"
+        assert book.title == "Le petit Prince"
+        assert book.series_number == None
+        assert book.series == None
+        assert book.mark == 7
+        assert book.reading_state == "reading"
+        assert book.language == "french"
+        assert book.is_ebook == False
+        assert book.book_type == 0
+        assert book.date_end_reading == None
+        assert modification == "BOOK_ADDED"
+
+    def test_adding_book_update_book(self):
+        cleaned_data = {
+            "title": "One Piece",
+            "author_firstname": "Eiichiro",
+            "author_lastname": "Oda",
+            "series": None,
+            "series_number": None,
+            "is_ebook": 0,
+            "book_type": 2,
+            "language": "english",
+            "mark": 9,
+            "reading_state": "read",
+        }
+        author, book, modification = adding_book(cleaned_data)
+        assert author.firstname == "Eiichiro"
+        assert author.lastname == "Oda"
+        assert book.title == "One Piece"
+        assert book.series_number == None
+        assert book.series == None
+        assert book.mark == 9
+        assert book.reading_state == "read"
+        assert book.language == "english"
+        assert book.is_ebook == False
+        assert book.book_type == 2
+        assert book.date_end_reading == date.today()
+        print(modification)
+        assert modification == "BOOK_MODIFIED"

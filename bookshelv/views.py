@@ -237,27 +237,26 @@ def adding_book(cleaned_data: Dict) -> Tuple[Author, Book, str]:
             book = written_by_list[0].book
             author_object = written_by_list[0].author
             logger.info("The book already exist in the database.")
-            nb_rows_updated = 0
             if book.reading_state == "to be read" and cleaned_data["reading_state"] in (
                 "reading",
                 "read",
             ):
-                nb_rows_updated = book.update(
-                    reading_state=cleaned_data["reading_state"]
-                )
+                book.reading_state=cleaned_data["reading_state"]
+                if cleaned_data["reading_state"]=="read":
+                    book.date_end_reading=datetime.date.today()
+                book.save()
                 modification = "BOOK_MODIFIED"
             elif (
                 book.reading_state == "reading"
                 and cleaned_data["reading_state"] == "read"
             ):
-                nb_rows_updated = book.update(
-                    reading_state=cleaned_data["reading_state"]
-                )
+                book.reading_state=cleaned_data["reading_state"]
+                book.date_end_reading=datetime.date.today()
+                book.save()
                 modification = "BOOK_MODIFIED"
             else:
                 modification = "NO_MODIFICATION"
 
-            logger.info(f"{nb_rows_updated} rows updated for book {book}")
         else:
             logger.critical("The book has already several copies in the database.")
             raise ValueError("Too many authors matching")
