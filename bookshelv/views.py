@@ -25,6 +25,8 @@ from .utils import Round2, get_cover_address
 
 COVER_NOT_FOUND = "https://www.nypl.org/scout/_next/image?url=https%3A%2F%2Fdrupal.nypl.org%2Fsites-drupal%2Fdefault%2Ffiles%2Fstyles%2Fmax_width_960%2Fpublic%2Fblogs%2FJ5LVHEL.jpg%3Fitok%3DDkMp1Irh&w=1920&q=90"
 
+logger.add("logs/log_{time}.log", rotation="00:00", diagnose=True)
+
 
 def index(request):
     logger.info("Requesting index page...")
@@ -141,33 +143,6 @@ def get_cleaned_data(form: AddBookForm) -> Dict:
     }
 
 
-def __get_book(cleaned_data: Dict) -> Tuple:
-    try:
-        new_book = (
-            Book.objects.filter(
-                title=cleaned_data["title"],
-                id__book_id__author_id__lastname=cleaned_data["author_lastname"],
-                id__book_id__author_id__firstname=cleaned_data["author_firstname"],
-            ),
-            False,
-        )
-    except:
-        new_book_id = (
-            Book.objects.values_list("id", flat=True).aggregate(Max("id"))["id__max"]
-            + 1
-        )
-        new_book = Book.objects.get_or_create(
-            title=cleaned_data["title"],
-            id=new_book_id,
-            format=cleaned_data["is_ebook"],
-            type=cleaned_data["book_type"],
-            series_number=cleaned_data["series_number"],
-            language=cleaned_data["language"],
-            series=cleaned_data["series"],
-        )
-    return new_book
-
-
 MODIFICATION = {
     "BOOK_ADDED": _("Votre livre a bien été ajouté à la base de données"),
     "BOOK_MODIFIED": _("Votre livre a bien été modifié dans la base de données"),
@@ -214,20 +189,22 @@ def adding_book(cleaned_data: Dict) -> Tuple[Author, Book, str]:
                     lastname=cleaned_data["author_lastname"],
                 )
                 logger.info(
-                    f"The author {author_object} doesn't exist, we are creating it."
+                    f"The author {repr(author_object)} doesn't exist, we are creating it."
                 )
                 author_object.save()
             elif len(author_object) == 1:
                 author_object = author_object[0]
                 logger.info(
-                    f"The author {author_object} already exists in the database."
+                    f"The author {repr(author_object)} already exists in the database."
                 )
             else:
                 logger.critical(
-                    f"There is a problem with the number of author matching : {author_object}"
+                    f"There is a problem with the number of author matching : {repr(author_object)}"
                 )
                 raise ValueError("Too many authors matching")
-            logger.info(f"Creating the link between {book} and {author_object}.")
+            logger.info(
+                f"Creating the link between {repr(book)} and {repr(author_object)}."
+            )
             written_by = WrittenBy.objects.create(
                 book_id=book.id, author_id=author_object.id
             )
@@ -236,22 +213,22 @@ def adding_book(cleaned_data: Dict) -> Tuple[Author, Book, str]:
         elif len(written_by_list) == 1:
             book = written_by_list[0].book
             author_object = written_by_list[0].author
-            logger.info("The book already exist in the database.")
+            logger.info("The book already exists in the database.")
             if book.reading_state == "to be read" and cleaned_data["reading_state"] in (
                 "reading",
                 "read",
             ):
-                book.reading_state=cleaned_data["reading_state"]
-                if cleaned_data["reading_state"]=="read":
-                    book.date_end_reading=datetime.date.today()
+                book.reading_state = cleaned_data["reading_state"]
+                if cleaned_data["reading_state"] == "read":
+                    book.date_end_reading = datetime.date.today()
                 book.save()
                 modification = "BOOK_MODIFIED"
             elif (
                 book.reading_state == "reading"
                 and cleaned_data["reading_state"] == "read"
             ):
-                book.reading_state=cleaned_data["reading_state"]
-                book.date_end_reading=datetime.date.today()
+                book.reading_state = cleaned_data["reading_state"]
+                book.date_end_reading = datetime.date.today()
                 book.save()
                 modification = "BOOK_MODIFIED"
             else:

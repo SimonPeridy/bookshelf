@@ -177,6 +177,20 @@ class BookAddingTestCase(TestCase):
         assert book.book_type == 0
         assert book.date_end_reading == date.today()
         assert modification == "BOOK_ADDED"
+        assert Book.objects.filter(
+            title="Harry Potter 3",
+            series_number=3,
+            series="Harry Potter",
+            mark=4,
+            reading_state="read",
+            language="french",
+            is_ebook=True,
+            book_type=0,
+        ).exists()
+        assert WrittenBy.objects.filter(
+            book_id=book.id,
+            author_id=Author.objects.get(firstname="J.K.", lastname="Rowling"),
+        )
 
     def test_adding_book_new_book_new_author(self):
         cleaned_data = {
@@ -204,6 +218,22 @@ class BookAddingTestCase(TestCase):
         assert book.book_type == 0
         assert book.date_end_reading == None
         assert modification == "BOOK_ADDED"
+        assert Book.objects.filter(
+            title="Le petit Prince",
+            series_number=None,
+            series=None,
+            mark=7,
+            reading_state="reading",
+            language="french",
+            is_ebook=False,
+            book_type=0,
+        ).exists()
+        assert WrittenBy.objects.filter(
+            book_id=book.id,
+            author_id=Author.objects.get(
+                firstname="Antoine", lastname="de Saint-Exupéry"
+            ),
+        )
 
     def test_adding_book_update_book(self):
         cleaned_data = {
@@ -230,5 +260,96 @@ class BookAddingTestCase(TestCase):
         assert book.is_ebook == False
         assert book.book_type == 2
         assert book.date_end_reading == date.today()
-        print(modification)
         assert modification == "BOOK_MODIFIED"
+        assert Book.objects.filter(
+            title="One Piece",
+            series_number=None,
+            series=None,
+            mark=9,
+            reading_state="read",
+            language="english",
+            is_ebook=False,
+            book_type=2,
+        ).exists()
+        assert WrittenBy.objects.filter(
+            book_id=book.id,
+            author_id=Author.objects.get(firstname="Eiichiro", lastname="Oda"),
+        )
+
+    def test_get_search_result_nothing(self):
+        list_author_expected = Author.objects.all()
+        list_books_expected = Book.objects.all()
+        list_author, list_books = get_search_result(author_name="", book_name="")
+        assert len(list_author) == len(list_author_expected)
+        assert all(
+            list_author[i] == list_author_expected[i] for i in range(len(list_author))
+        )
+        assert len(list_books) == len(list_books_expected)
+        assert all(
+            list_books[i] == list_books_expected[i] for i in range(len(list_books))
+        )
+
+    def test_get_search_result_one_author(self):
+        list_author_expected = Author.objects.filter(
+            firstname="J.K.", lastname="Rowling"
+        )
+        list_books_expected = Book.objects.filter(title__contains="Harry Potter")
+        list_author, list_books = get_search_result(author_name="rowl", book_name="")
+        assert len(list_author) == len(list_author_expected)
+        assert all(
+            list_author[i] == list_author_expected[i] for i in range(len(list_author))
+        )
+        assert len(list_books) == len(list_books_expected)
+        assert all(
+            list_books[i] == list_books_expected[i] for i in range(len(list_books))
+        )
+
+    def test_get_search_result_one_book(self):
+        list_author_expected = Author.objects.filter(
+            firstname="Eiichiro", lastname="Oda"
+        )
+        list_books_expected = Book.objects.filter(title__icontains="piece")
+        list_author, list_books = get_search_result(author_name="", book_name="piece")
+        assert len(list_author) == len(list_author_expected)
+        assert all(
+            list_author[i] == list_author_expected[i] for i in range(len(list_author))
+        )
+        assert len(list_books) == len(list_books_expected)
+        assert all(
+            list_books[i] == list_books_expected[i] for i in range(len(list_books))
+        )
+
+    def test_get_search_result_book_author(self):
+        list_author_expected = Author.objects.filter(
+            firstname="J.K.", lastname="Rowling"
+        )
+        list_books_expected = Book.objects.filter(title__icontains="secret")
+        list_author, list_books = get_search_result(
+            author_name="rowl", book_name="secr"
+        )
+        assert len(list_author) == len(list_author_expected)
+        assert all(
+            list_author[i] == list_author_expected[i] for i in range(len(list_author))
+        )
+        assert len(list_books) == len(list_books_expected)
+        assert all(
+            list_books[i] == list_books_expected[i] for i in range(len(list_books))
+        )
+
+    def test_get_search_result_books_authors(self):
+        list_author_expected = Author.objects.filter(
+            Q(lastname="Carrisi") | Q(lastname="Rowling")
+        )
+        list_books_expected = Book.objects.filter(
+            Q(title="La maison des voix")
+            | Q(title="Harry Potter et la chambre des secrets")
+        )
+        list_authors, list_books = get_search_result(author_name="i", book_name="la")
+        assert len(list_authors) == len(list_author_expected)
+        assert all(
+            list_authors[i] == list_author_expected[i] for i in range(len(list_authors))
+        )
+        assert len(list_books) == len(list_books_expected)
+        assert all(
+            list_books[i] == list_books_expected[i] for i in range(len(list_books))
+        )

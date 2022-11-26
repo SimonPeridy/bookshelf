@@ -39,22 +39,22 @@ class AddBookForm(forms.Form):
     series = forms.CharField(label="Série", required=False)
     series_number = forms.IntegerField(label="Numéro", min_value=1, required=False)
 
-    def clean(self):
-        cleaned_data = super().clean()
-        title = cleaned_data["title"]
-        author_lastname, author_firstname = map(
-            lambda x: x.strip(), cleaned_data["author"].split(",")
-        )
-        book = get_the_book(title=title, author=author_lastname)
-        if (
-            book["title"].lower() != title.lower()
-            or author_lastname not in book["author"]
-            or author_firstname not in book["author"]
-        ):
-            raise ValidationError(
-                _(
-                    "Ce livre n'est pas reconnu, peut être que vous cherchez %(title)s de %(author)s"
-                ),
-                code="invalid",
-                params={"title": book["title"], "author": book["author"]},
-            )
+    # def clean(self):
+    #     cleaned_data = super().clean()
+    #     title = cleaned_data["title"]
+    #     author_lastname, author_firstname = map(
+    #         lambda x: x.strip(), cleaned_data["author"].split(",")
+    #     )
+    #     book = get_the_book(title=title, author=author_lastname)
+    #     if (
+    #         book["title"].lower() != title.lower()
+    #         or author_lastname not in book["author"]
+    #         or author_firstname not in book["author"]
+    #     ):
+    #         raise ValidationError(
+    #             _(
+    #                 "Ce livre n'est pas reconnu, peut être que vous cherchez %(title)s de %(author)s"
+    #             ),
+    #             code="invalid",
+    #             params={"title": book["title"], "author": book["author"]},
+    #         )

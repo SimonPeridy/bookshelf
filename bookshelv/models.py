@@ -26,6 +26,17 @@ class Author(models.Model):
         )
         return False
 
+    def __repr__(self) -> str:
+        return (
+            f"{self.__class__.__name__}("
+            + ", ".join(
+                (f"{attr_name}={getattr(self, attr_name)}")
+                for attr_name in vars(self)
+                if not attr_name.startswith("_")
+            )
+            + ")"
+        )
+
     class Meta:
         get_latest_by = "id"
         managed = True
@@ -43,6 +54,17 @@ class WrittenBy(models.Model):
 
     def __str__(self) -> str:
         return f"Author : {self.author}, Book : {self.book}"
+
+    def __repr__(self) -> str:
+        return (
+            f"{self.__class__.__name__}("
+            + ", ".join(
+                (f"{attr_name}={getattr(self, attr_name)}")
+                for attr_name in vars(self)
+                if not attr_name.startswith("_")
+            )
+            + ")"
+        )
 
     class Meta:
         managed = True
@@ -96,3 +118,32 @@ class Book(models.Model):
             "title",
             "series",
         ]
+
+    def __repr__(self) -> str:
+        return (
+            f"{self.__class__.__name__}("
+            + ", ".join(
+                (f"{attr_name}={getattr(self, attr_name)}")
+                for attr_name in vars(self)
+                if not attr_name.startswith("_")
+            )
+            + ")"
+        )
+
+    def __eq__(self, book) -> bool:
+        if isinstance(book, self.__class__):
+            equality_attibutes = (
+                "title",
+                "book_type",
+                "series",
+                "series_number",
+                "language",
+            )
+            return all(
+                getattr(self, attr) == getattr(book, attr)
+                for attr in equality_attibutes
+            )
+        logger.warning(
+            "You are comparing an book with an object of a differenct class."
+        )
+        return False
