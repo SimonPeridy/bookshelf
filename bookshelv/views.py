@@ -2,7 +2,7 @@ import datetime
 import json
 from enum import Enum
 from math import pi
-from typing import Union
+from typing import List, Union
 
 from bokeh.embed import components
 from bokeh.models import ColorBar, ColumnDataSource, DataRange1d, FactorRange
@@ -47,6 +47,21 @@ def get_search_result(
     )
     base_list = WrittenBy.objects.filter(
         Q(book__title__icontains=book_name)
+        & Q(book__reading_state="read")
+        & Q(
+            author_id__in=queryset.filter(full_name__icontains=author_name).values("id")
+        )
+    )
+    base_list_2 = WrittenBy.objects.filter(
+        Q(book__title__icontains=book_name)
+        & Q(book__reading_state="reading")
+        & Q(
+            author_id__in=queryset.filter(full_name__icontains=author_name).values("id")
+        )
+    )
+    base_list_3 = WrittenBy.objects.filter(
+        Q(book__title__icontains=book_name)
+        & Q(book__reading_state="to be read")
         & Q(
             author_id__in=queryset.filter(full_name__icontains=author_name).values("id")
         )
@@ -102,7 +117,18 @@ def get_all_authors() -> List[Author]:
 def get_authors(request):
     logger.info("Requesting the authors...")
     if request.method == "POST":
-        author_list = get_all_authors()
+        if request.POST.get("author_name"):
+            author_set_start = Author.objects.annotate(
+                full_name=Concat("lastname", Value(", "), "firstname")
+            ).filter(full_name__istartswith=request.POST.get("author_name"))
+            author_set_contains = Author.objects.annotate(
+                full_name=Concat("lastname", Value(", "), "firstname")
+            ).filter(full_name__icontains=request.POST.get("author_name"))
+            author_list = list(
+                author_set_start.values_list("full_name", flat=True)
+            ) + list(author_set_contains.values_list("full_name", flat=True))
+        else:
+            author_list = get_all_authors()
         context = {"author_list": author_list}
         logger.info(f"There is {len(author_list)} authors in the db, all returned.")
         return JsonResponse(context)
@@ -275,7 +301,7 @@ def series_entry(request):
     logger.info("Loading the series list page...")
     series_list = (
         Book.objects.filter(series__isnull=False)
-        .distinct("series")
+        .distinct("title", "series")
         .values_list("series", flat=True)
     )
     context = {"nb_series": len(list(series_list)), "series_list": list(series_list)}

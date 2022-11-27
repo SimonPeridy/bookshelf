@@ -1,7 +1,7 @@
 var authors = []
 var series = []
 
-function clear_search_bar(id){
+function clear_search_bar(id) {
     document.getElementById(id).value = ""
     launch_search()
 }
@@ -49,7 +49,7 @@ function myautocomplete(search_string, field_type) {
 window.onload = function () {
     autocomplete(document.getElementById("author"), authors);
     autocompleteSeries(document.getElementById("series"), series);
-    document.getElementById("series_number").addEventListener("keyup", function(){
+    document.getElementById("series_number").addEventListener("keyup", function () {
         var value = parseInt(document.getElementById("series_number").value, 10)
         if ((isNaN(value)) || (value < 1)) {
             document.getElementById("series_number").setAttribute("class", "form-control is-invalid")
@@ -76,7 +76,7 @@ function autocomplete(inp, arr) {
                 type: "POST",
                 async: false,
                 success: function (data) {
-//                    document.getElementById("hint").hidden = true
+                    // document.getElementById("hint").hidden = true
                     arr = data.author_list
                 },
                 error: function (request, error) {
@@ -94,34 +94,35 @@ function autocomplete(inp, arr) {
         /*create a DIV element that will contain the items (values):*/
         a = document.createElement("DIV");
         a.setAttribute("id", this.id + "autocomplete-list");
-        a.setAttribute("class", "autocomplete-authors");
+        a.setAttribute("class", "autocomplete-authors autocomplete-foreground list-group");
         /*append the DIV element as a child of the autocomplete container:*/
         this.parentNode.appendChild(a);
         /*for each item in the array...*/
         for (i = 0; i < arr.length; i++) {
             /*check if the item starts with the same letters as the text field value:*/
-            if (arr[i].substring(0, val.length).toUpperCase() == val.toUpperCase()) {
-                /*create a DIV element for each matching element:*/
-                b = document.createElement("button");
+            // if (arr[i].substring(0, val.length).toUpperCase() == val.toUpperCase()) {
+            /*create a DIV element for each matching element:*/
+            b = document.createElement("button");
 
-                b.setAttribute("class", "list-group-item list-group-item-action list-group-item-secondary")
-
-                /*make the matching letters bold:*/
-                b.innerHTML = "<strong>" + arr[i].substring(0, val.length) + "</strong>";
-                b.innerHTML += arr[i].substring(val.length);
-                /*insert a input field that will hold the current array item's value:*/
-                b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
-                /*execute a function when someone clicks on the item value (DIV element):*/
-                b.addEventListener("click", function (e) {
-                    /*insert the value for the autocomplete text field:*/
-                    inp.value = this.getElementsByTagName("input")[0].value;
-                    /*close the list of autocompleted values,
-                    (or any other open lists of autocompleted values:*/
-                    closeAllLists();
-//                    document.getElementById("hint").hidden = false
-                });
-                a.appendChild(b);
-            }
+            b.setAttribute("class", "list-group-item list-group-item-action list-group-item-secondary")
+            // trouver un moyen en js de mettre en gras seulement les lettres qui matchent ? ou aucune lettre ?
+            /*make the matching letters bold:*/
+            // b.innerHTML = "<strong>" + arr[i].substring(0, val.length) + "</strong>";
+            // b.innerHTML += arr[i].substring(val.length);
+            b.innerHTML = arr[i];
+            /*insert a input field that will hold the current array item's value:*/
+            b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
+            /*execute a function when someone clicks on the item value (DIV element):*/
+            b.addEventListener("click", function (e) {
+                /*insert the value for the autocomplete text field:*/
+                inp.value = this.getElementsByTagName("input")[0].value;
+                /*close the list of autocompleted values,
+                (or any other open lists of autocompleted values:*/
+                closeAllLists();
+                // document.getElementById("hint").hidden = false
+            });
+            a.appendChild(b);
+            // }
         }
     });
     /*execute a function presses a key on the keyboard:*/
@@ -205,7 +206,7 @@ function autocompleteSeries(inp, arr) {
                 type: "POST",
                 async: false,
                 success: function (data) {
-//                    document.getElementById("hint2").hidden = true
+                    //                    document.getElementById("hint2").hidden = true
                     arr = data.series_list
                 },
                 error: function (request, error) {
@@ -253,7 +254,7 @@ function autocompleteSeries(inp, arr) {
                     /*close the list of autocompleted values,
                     (or any other open lists of autocompleted values:*/
                     closeAllLists();
-//                    document.getElementById("hint2").hidden = false
+                    //                    document.getElementById("hint2").hidden = false
                 });
                 a.appendChild(b);
             }

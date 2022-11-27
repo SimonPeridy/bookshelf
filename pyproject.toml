@@ -10,6 +10,9 @@ Django = "^4.0.2"
 psycopg2 = "^2.9.3"
 loguru = "^0.6.0"
 coverage = "^6.5.0"
+bokeh = "^3.0.2"
+requests = "^2.28.1"
+beautifulsoup4 = "^4.11.1"
 
 [tool.poetry.dev-dependencies]
 black = "^22.3.0"

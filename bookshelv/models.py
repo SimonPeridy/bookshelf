@@ -106,9 +106,15 @@ class Book(models.Model):
     date_end_reading = models.DateField(blank=True, null=True)
 
     def __str__(self) -> str:
+        if self.reading_state == "read":
+            title = f"{self.title}"
+        elif self.reading_state == "reading":
+            title = f"<i>{self.title}</i>"
+        else:
+            title = f"<u>{self.title}</u>"
         if self.series is not None:
-            return f"{self.title}, <i>({self.series} {self.series_number})</i>"
-        return self.title
+            return f"{title}, <i>({self.series} {self.series_number})</i>"
+        return title
 
     class Meta:
         managed = True
