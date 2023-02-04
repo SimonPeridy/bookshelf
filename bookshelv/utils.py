@@ -1,10 +1,12 @@
 import re
+from typing import List, Union
 
-from django.db.models import Func
 import requests
 from bs4 import BeautifulSoup as bs
+from django.db.models import Func
 from loguru import logger
-from typing import List, Union
+
+from .models import Book
 
 
 class Round2(Func):
@@ -102,3 +104,7 @@ def get_the_book(
         ],  # always the first author atm, maybe make it match if there is several authors later
         "isbn": isbn,
     }
+
+
+def get_all_titles():
+    return " ".join(Book.objects.all().values_list("title", flat=True))

@@ -13,6 +13,7 @@ coverage = "^6.5.0"
 bokeh = "^3.0.2"
 requests = "^2.28.1"
 beautifulsoup4 = "^4.11.1"
+matplotlib = "^3.6.3"
 
 [tool.poetry.dev-dependencies]
 black = "^22.3.0"

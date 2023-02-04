@@ -3,7 +3,6 @@ from django.views.generic import RedirectView
 
 from . import views
 
-
 urlpatterns = [
     path("", views.index, name="index"),
     path("add_book/", views.add_book, name="add_book"),
@@ -25,4 +24,5 @@ urlpatterns = [
     ),
     path("category-pie-chart/", views.category_chart, name="category_pie_chart"),
     path("charts/", views.display_charting_page, name="charts"),
+    path("wordcloud/", views.create_wordcloud, name="wordcloud"),
 ]

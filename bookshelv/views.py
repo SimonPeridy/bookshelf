@@ -4,6 +4,10 @@ from enum import Enum
 from math import pi
 from typing import List, Union
 
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import stopwordsiso as stopwords
 from bokeh.embed import components
 from bokeh.models import ColorBar, ColumnDataSource, DataRange1d, FactorRange
 from bokeh.models.tickers import FixedTicker
@@ -18,10 +22,12 @@ from django.shortcuts import render
 from django.template import loader
 from django.utils.translation import gettext_lazy as _
 from loguru import logger
+from PIL import Image
+from wordcloud import STOPWORDS, WordCloud
 
 from .form import AddBookForm
 from .models import Author, Book, WrittenBy
-from .utils import Round2, get_cover_address
+from .utils import Round2, get_all_titles, get_cover_address
 
 COVER_NOT_FOUND = "https://www.nypl.org/scout/_next/image?url=https%3A%2F%2Fdrupal.nypl.org%2Fsites-drupal%2Fdefault%2Ffiles%2Fstyles%2Fmax_width_960%2Fpublic%2Fblogs%2FJ5LVHEL.jpg%3Fitok%3DDkMp1Irh&w=1920&q=90"
 
@@ -40,7 +46,7 @@ def index(request):
     best_author_datas = best_author_bar_chart_view(request)
     number_books_read_by_author = small_author_bar_chart_view(request)
     context = {**context, **best_author_datas, **number_books_read_by_author}
-    logger.debug(f"Context : {context}")
+    # logger.debug(f"Context : {context}")
     return render(request, "bookshelv/index.html", context)
 
 
@@ -488,3 +494,40 @@ def display_charting_page(request):
 def search_book(request):
 
     pass
+
+
+def create_wordcloud(request):
+    all_titles: str = get_all_titles()
+    stop_words = stopwords.stopwords(["en", "fr"])
+    stop_words = stop_words.union({",", ";", ":", "!", "?", ".", "une"})
+    final_list = []
+    for word in all_titles.split():
+        if (l_word := word.lower()) not in stop_words:
+            if any(l_word.startswith(e) for e in ["l'", "d'", "s'", "n'"]):
+                final_list.append(l_word[2:])
+            else:
+                final_list.append(l_word)
+    # pic = np.array(
+    #     Image.open(
+    #         requests.get(
+    #             # "http://www.clker.com/cliparts/O/i/x/Y/q/P/yellow-house-hi.png",
+    #             "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTiVZOPF6fPQ6SxN-1aE7VPji3PJ9SaAWs13Q&usqp=CAU",
+    #             stream=True,
+    #         ).raw
+    #     )
+    # )
+    wordcloud = WordCloud(
+        width=16 * 60,
+        height=9 * 60,
+        background_color="white",
+        stopwords=None,
+        # mask=pic,
+        # contour_width=1,
+        min_font_size=10,
+        max_words=200,
+        include_numbers=True,
+        relative_scaling=1,
+    ).generate(" ".join(final_list))
+    img = wordcloud.to_image()
+    img.save("C:/Users/Simon/Documents/W/Bibliotheque/static/images/wordcloud.png")
+    return render(request, "bookshelv/wordcloud.html", None)
