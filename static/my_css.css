@@ -11,4 +11,5 @@ input::-webkit-inner-spin-button {
 .autocomplete-foreground {
     position: absolute;
     z-index: 1;
+    opacity: 1
 }

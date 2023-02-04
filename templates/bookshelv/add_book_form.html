@@ -4,33 +4,37 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <script src="{{ STATIC_URL }}/static/jquery.js"></script>
+    <script src="{{ STATIC_URL }}/static/my_js.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}/static/bootstrap-5.1.3/js/bootstrap.js"></script>
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}/static/bootstrap-5.1.3/css/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}/static/my_css.css" />
+    <link rel="icon" href="{{ STATIC_URL }}/static/favicon.ico" />
+    <title>Ajouter un livre</title>
+    {% include "bookshelv/home_button.html" %}
+    <header style="text-align: center">
+        <section>
+            <h1>Quel livre souhaitez-vous ajouter ?</h1>
+        </section>
+    </header>
 </head>
 
 <body>
-    <form action="" method="post">
-        {% csrf_token %}
-        <div>
-            <div>
-                {# {% for i in form.book_type %}#}
-                <input type="radio" name="book_type" id="{{ i.id_for_label }}" value="{{ i.id_for_label }}">
-                <label for="{{ i.id_for_label }}">{{ i.label }}</label>
-                {# <div>#}
-                    {# {{ i.label_tag }}#}
-                    {# </div>#}
-                {# {% endfor %}#}
-                {{ form.book_type.label }}
-                {{ form.book_type }}
-                {# {% for i, e in form.book_type.choices %}#}
-                {# {{ e }} {{ i }}#}
-                {# <input class="form-check-input" type="radio" name="booktype" id="{{ e }}" value="{{ i }}">#}
-                {# checked= {% i == form.book_type.initial %}>#}
-                {# <label class="form-check-label" for="{{ e }}">{{ e }}</label>#}
-                {# {% endfor %}#}
-            </div>
+    <div class="container" style="margin-top: 7%;">
+        <div class="row">
+
+            <form action="" method="post">
+                {% csrf_token %}
+                <!-- {{form}} -->
+                <div class="form-check form-check-inline">
+                        {{ form.book_type.errors }}
+                        {{ form.book_type.label }}
+                        {{ form.book_type }}
+                </div>
+                <input type="submit" value="Submit">
+            </form>
         </div>
-        {# {{ form }}#}
-        <input type="submit" value="Submit">
-    </form>
+    </div>
 </body>
 
 </html>

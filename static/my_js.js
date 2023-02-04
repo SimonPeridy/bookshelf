@@ -47,16 +47,16 @@ function myautocomplete(search_string, field_type) {
 }
 
 window.onload = function () {
-    autocomplete(document.getElementById("author"), authors);
-    autocompleteSeries(document.getElementById("series"), series);
-    document.getElementById("series_number").addEventListener("keyup", function () {
-        var value = parseInt(document.getElementById("series_number").value, 10)
-        if ((isNaN(value)) || (value < 1)) {
-            document.getElementById("series_number").setAttribute("class", "form-control is-invalid")
-        } else {
-            document.getElementById("series_number").setAttribute("class", "form-control")
-        }
-    })
+    autocomplete(document.getElementById("id_author"), authors);
+    autocompleteSeries(document.getElementById("id_series"), series);
+    // document.getElementById("id_series_number").addEventListener("keyup", function () {
+    //     var value = parseInt(document.getElementById("id_series_number").value, 10)
+    //     if ((isNaN(value)) || (value < 1)) {
+    //         document.getElementById("id_series_number").setAttribute("class", "form-control is-invalid")
+    //     } else {
+    //         document.getElementById("id_series_number").setAttribute("class", "form-control")
+    //     }
+    // })
 }
 
 //autocomplete life
@@ -66,18 +66,19 @@ function autocomplete(inp, arr) {
     var currentFocus;
     /*execute a function when someone writes in the text field:*/
     inp.addEventListener("input", function (e) {
-        if (document.getElementById("author").value !== "") {
+        if (document.getElementById("id_author").value !== "") {
             console.log("Launching ajax request")
             $.ajax({
                 url: "get_authors/",
                 data: {
-                    "author_name": document.getElementById("author").value,
+                    "author_name": document.getElementById("id_author").value,
                 },
                 type: "POST",
                 async: false,
                 success: function (data) {
                     // document.getElementById("hint").hidden = true
                     arr = data.author_list
+                    console.log(arr)
                 },
                 error: function (request, error) {
                     console.log("error: " + error);
@@ -197,11 +198,11 @@ function autocompleteSeries(inp, arr) {
     var currentFocus;
     /*execute a function when someone writes in the text field:*/
     inp.addEventListener("input", function (e) {
-        if (document.getElementById("series").value !== "") {
+        if (document.getElementById("id_series").value !== "") {
             $.ajax({
                 url: "get_series/",
                 data: {
-                    "series_name": document.getElementById("series").value
+                    "series_name": document.getElementById("id_series").value
                 },
                 type: "POST",
                 async: false,

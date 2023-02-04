@@ -14,6 +14,10 @@ class Author(models.Model):
     lastname = models.CharField(max_length=150)
 
     def __str__(self):
+        if self.firstname == "":
+            return self.lastname
+        elif self.lastname == "":
+            return self.firstname
         return f"{self.lastname}, {self.firstname}"
 
     def __eq__(self, author) -> bool:
@@ -104,6 +108,8 @@ class Book(models.Model):
     )
     mark = models.IntegerField(blank=True, null=True)
     date_end_reading = models.DateField(blank=True, null=True)
+    # progression indice written as a string : xx% if it's xx% of reading, xxx if I am at the xxx'chapter
+    progression = models.CharField(max_length=10, blank=True, null=True)
 
     def __str__(self) -> str:
         if self.reading_state == "read":
@@ -113,7 +119,7 @@ class Book(models.Model):
         else:
             title = f"<u>{self.title}</u>"
         if self.series is not None:
-            return f"{title}, <i>({self.series} {self.series_number})</i>"
+            return f"{title} <i>({self.series} {self.series_number})</i>"
         return title
 
     class Meta:
@@ -149,7 +155,5 @@ class Book(models.Model):
                 getattr(self, attr) == getattr(book, attr)
                 for attr in equality_attibutes
             )
-        logger.warning(
-            "You are comparing an book with an object of a differenct class."
-        )
+        logger.warning("You are comparing a book with an object of a differenct class.")
         return False

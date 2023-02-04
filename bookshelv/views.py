@@ -25,13 +25,18 @@ from .utils import Round2, get_cover_address
 
 COVER_NOT_FOUND = "https://www.nypl.org/scout/_next/image?url=https%3A%2F%2Fdrupal.nypl.org%2Fsites-drupal%2Fdefault%2Ffiles%2Fstyles%2Fmax_width_960%2Fpublic%2Fblogs%2FJ5LVHEL.jpg%3Fitok%3DDkMp1Irh&w=1920&q=90"
 
-logger.add("logs/log_{time}.log", rotation="00:00", diagnose=True)
+logger.add("logs/log_{time}.log", rotation="1 week", backtrace=True, diagnose=True)
 
 
 def index(request):
     logger.info("Requesting index page...")
     nb_books = Book.objects.filter(reading_state="read").count()
-    context = {"nb_books": nb_books}
+    nb_authors = (
+        WrittenBy.objects.filter(book__reading_state="read")
+        .distinct("author_id")
+        .count()
+    )
+    context = {"nb_books": nb_books, "nb_authors": nb_authors}
     best_author_datas = best_author_bar_chart_view(request)
     number_books_read_by_author = small_author_bar_chart_view(request)
     context = {**context, **best_author_datas, **number_books_read_by_author}
@@ -43,25 +48,10 @@ def get_search_result(
     author_name: str, book_name: str
 ) -> Tuple[List[Author], List[Book]]:
     queryset = Author.objects.annotate(
-        full_name=Concat("firstname", Value(" "), "lastname")
+        full_name=Concat("lastname", Value(", "), "firstname")
     )
     base_list = WrittenBy.objects.filter(
         Q(book__title__icontains=book_name)
-        & Q(book__reading_state="read")
-        & Q(
-            author_id__in=queryset.filter(full_name__icontains=author_name).values("id")
-        )
-    )
-    base_list_2 = WrittenBy.objects.filter(
-        Q(book__title__icontains=book_name)
-        & Q(book__reading_state="reading")
-        & Q(
-            author_id__in=queryset.filter(full_name__icontains=author_name).values("id")
-        )
-    )
-    base_list_3 = WrittenBy.objects.filter(
-        Q(book__title__icontains=book_name)
-        & Q(book__reading_state="to be read")
         & Q(
             author_id__in=queryset.filter(full_name__icontains=author_name).values("id")
         )
@@ -124,9 +114,15 @@ def get_authors(request):
             author_set_contains = Author.objects.annotate(
                 full_name=Concat("lastname", Value(", "), "firstname")
             ).filter(full_name__icontains=request.POST.get("author_name"))
-            author_list = list(
+            # making sure to write only once each author (as authors starting by "adl" also contain "adl")
+            list_author_start = list(
                 author_set_start.values_list("full_name", flat=True)
-            ) + list(author_set_contains.values_list("full_name", flat=True))
+            )
+            author_list = list_author_start + [
+                author
+                for author in author_set_contains.values_list("full_name", flat=True)
+                if author not in list_author_start
+            ]
         else:
             author_list = get_all_authors()
         context = {"author_list": author_list}
@@ -150,7 +146,7 @@ def get_series(request):
 
 
 def get_cleaned_data(form: AddBookForm) -> Dict:
-    cleaned_data = form.cleaned_data()
+    cleaned_data = form.cleaned_data
     author_lastname, author_firstname = map(
         lambda x: x.strip(), form.cleaned_data["author"].split(",")
     )
@@ -165,7 +161,9 @@ def get_cleaned_data(form: AddBookForm) -> Dict:
         "book_type": cleaned_data["book_type"],
         "language": cleaned_data["language"],
         "mark": cleaned_data["mark"],
-        "reading_state": cleaned_data["reading_state"],
+        "reading_state": cleaned_data["reading_state"]
+        if "reading_state" in cleaned_data.keys()
+        else "read",
     }
 
 
@@ -192,6 +190,7 @@ def adding_book(cleaned_data: Dict) -> Tuple[Author, Book, str]:
         if len(written_by_list) == 0:
             logger.info("Need to add the new book to the database.")
             book = Book.objects.create(
+                id=Book.objects.latest("id").id + 1,
                 title=cleaned_data["title"],
                 is_ebook=cleaned_data["is_ebook"],
                 book_type=cleaned_data["book_type"],
@@ -211,6 +210,7 @@ def adding_book(cleaned_data: Dict) -> Tuple[Author, Book, str]:
             )
             if len(author_object) == 0:
                 author_object = Author.objects.create(
+                    id=Author.objects.latest("id").id + 1,
                     firstname=cleaned_data["author_firstname"],
                     lastname=cleaned_data["author_lastname"],
                 )
@@ -232,7 +232,9 @@ def adding_book(cleaned_data: Dict) -> Tuple[Author, Book, str]:
                 f"Creating the link between {repr(book)} and {repr(author_object)}."
             )
             written_by = WrittenBy.objects.create(
-                book_id=book.id, author_id=author_object.id
+                id=WrittenBy.objects.latest("id").id + 1,
+                book_id=book.id,
+                author_id=author_object.id,
             )
             written_by.save()
             modification = "BOOK_ADDED"
@@ -266,6 +268,10 @@ def adding_book(cleaned_data: Dict) -> Tuple[Author, Book, str]:
     return author_object, book, modification
 
 
+# FORM_TEMPLATE = "bookshelv/add_book_form.html" # can't make it as personalized as I would like to
+FORM_TEMPLATE = "bookshelv/add_book.html"
+
+
 def add_book(request):
     logger.info("Adding the book...")
     if request.method == "POST":
@@ -288,13 +294,13 @@ def add_book(request):
             }
             return render(request, "bookshelv/validation.html", context)
         else:
-            logger.info("Something was wrong in the form : {}".format(form.errors))
-            form = AddBookForm()
-            return render(request, "bookshelv/add_book.html", {"form": form})
+            logger.error("Something was wrong in the form : {}".format(form.errors))
+            # form = AddBookForm()
+            return render(request, FORM_TEMPLATE, {"form": form})
     else:
         form = AddBookForm()
         logger.info("Generating the form...")
-        return render(request, "bookshelv/add_book.html", {"form": form})
+        return render(request, FORM_TEMPLATE, {"form": form})
 
 
 def series_entry(request):
