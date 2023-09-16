@@ -7,7 +7,8 @@ from typing import List, Union
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import stopwordsiso as stopwords
+
+# import stopwordsiso as stopwords
 from bokeh.embed import components
 from bokeh.models import ColorBar, ColumnDataSource, DataRange1d, FactorRange
 from bokeh.models.tickers import FixedTicker
@@ -23,11 +24,13 @@ from django.template import loader
 from django.utils.translation import gettext_lazy as _
 from loguru import logger
 from PIL import Image
-from wordcloud import STOPWORDS, WordCloud
 
 from .form import AddBookForm
 from .models import Author, Book, WrittenBy
 from .utils import Round2, get_all_titles, get_cover_address
+
+# from wordcloud import STOPWORDS, WordCloud
+
 
 COVER_NOT_FOUND = "https://www.nypl.org/scout/_next/image?url=https%3A%2F%2Fdrupal.nypl.org%2Fsites-drupal%2Fdefault%2Ffiles%2Fstyles%2Fmax_width_960%2Fpublic%2Fblogs%2FJ5LVHEL.jpg%3Fitok%3DDkMp1Irh&w=1920&q=90"
 
@@ -156,7 +159,7 @@ def get_cleaned_data(form: AddBookForm) -> Dict:
     author_lastname, author_firstname = map(
         lambda x: x.strip(), form.cleaned_data["author"].split(",")
     )
-    series = None if cleaned_data["series"] == "" else None
+    series = None if cleaned_data["series"] == "" else cleaned_data["series"]
     return {
         "title": cleaned_data["title"],
         "author_firstname": author_firstname,
