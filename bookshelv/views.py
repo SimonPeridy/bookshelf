@@ -2,13 +2,13 @@ import datetime
 import json
 from enum import Enum
 from math import pi
-from typing import List, Union
+from typing import Dict, List, Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-# import stopwordsiso as stopwords
+from nltk.corpus import stopwords
 from bokeh.embed import components
 from bokeh.models import ColorBar, ColumnDataSource, DataRange1d, FactorRange
 from bokeh.models.tickers import FixedTicker
@@ -29,7 +29,7 @@ from .form import AddBookForm
 from .models import Author, Book, WrittenBy
 from .utils import Round2, get_all_titles, get_cover_address
 
-# from wordcloud import STOPWORDS, WordCloud
+from wordcloud import STOPWORDS, WordCloud
 
 
 COVER_NOT_FOUND = "https://www.nypl.org/scout/_next/image?url=https%3A%2F%2Fdrupal.nypl.org%2Fsites-drupal%2Fdefault%2Ffiles%2Fstyles%2Fmax_width_960%2Fpublic%2Fblogs%2FJ5LVHEL.jpg%3Fitok%3DDkMp1Irh&w=1920&q=90"
@@ -501,8 +501,8 @@ def search_book(request):
 
 def create_wordcloud(request):
     all_titles: str = get_all_titles()
-    stop_words = stopwords.stopwords(["en", "fr"])
-    stop_words = stop_words.union({",", ";", ":", "!", "?", ".", "une"})
+    stop_words = stopwords.words("english") + stopwords.words("french")
+    # stop_words = stop_words.union({",", ";", ":", "!", "?", ".", "une"})
     final_list = []
     for word in all_titles.split():
         if (l_word := word.lower()) not in stop_words:
@@ -532,5 +532,5 @@ def create_wordcloud(request):
         relative_scaling=1,
     ).generate(" ".join(final_list))
     img = wordcloud.to_image()
-    img.save("C:/Users/Simon/Documents/W/Bibliotheque/static/images/wordcloud.png")
+    img.save("./static/images/wordcloud.png")
     return render(request, "bookshelv/wordcloud.html", None)

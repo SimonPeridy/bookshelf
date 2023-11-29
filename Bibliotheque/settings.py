@@ -77,8 +77,8 @@ DATABASES = {
         "HOST": "localhost",
         "NAME": "bookshelf",
         "USER": "postgres",
-        "PASSWORD": "root",
-        "PORT": 5433,
+        "PASSWORD": "postgres",
+        "PORT": 5432,
     }
 }
 
