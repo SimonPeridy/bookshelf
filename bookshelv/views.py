@@ -7,8 +7,6 @@ from typing import Dict, List, Tuple, Union
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-
-from nltk.corpus import stopwords
 from bokeh.embed import components
 from bokeh.models import ColorBar, ColumnDataSource, DataRange1d, FactorRange
 from bokeh.models.tickers import FixedTicker
@@ -23,16 +21,16 @@ from django.shortcuts import render
 from django.template import loader
 from django.utils.translation import gettext_lazy as _
 from loguru import logger
+from nltk.corpus import stopwords
 from PIL import Image
+from wordcloud import STOPWORDS, WordCloud
 
 from .form import AddBookForm
 from .models import Author, Book, WrittenBy
 from .utils import Round2, get_all_titles, get_cover_address
 
-from wordcloud import STOPWORDS, WordCloud
-
-
 COVER_NOT_FOUND = "https://www.nypl.org/scout/_next/image?url=https%3A%2F%2Fdrupal.nypl.org%2Fsites-drupal%2Fdefault%2Ffiles%2Fstyles%2Fmax_width_960%2Fpublic%2Fblogs%2FJ5LVHEL.jpg%3Fitok%3DDkMp1Irh&w=1920&q=90"
+CUSTOM_STOPWORDS = ["sous", "los", "un", "deux", "one"]
 
 logger.add("logs/log_{time}.log", rotation="1 week", backtrace=True, diagnose=True)
 
@@ -170,9 +168,12 @@ def get_cleaned_data(form: AddBookForm) -> Dict:
         "book_type": cleaned_data["book_type"],
         "language": cleaned_data["language"],
         "mark": cleaned_data["mark"],
-        "reading_state": cleaned_data["reading_state"]
-        if "reading_state" in cleaned_data.keys()
-        else "read",
+        "reading_state": (
+            cleaned_data["reading_state"]
+            if "reading_state" in cleaned_data.keys()
+            else "read"
+        ),
+        "date_end_reading": cleaned_data["date_end_reading"],
     }
 
 
@@ -208,9 +209,11 @@ def adding_book(cleaned_data: Dict) -> Tuple[Author, Book, str]:
                 language=cleaned_data["language"],
                 mark=cleaned_data["mark"],
                 reading_state=cleaned_data["reading_state"],
-                date_end_reading=datetime.date.today()
-                if cleaned_data["reading_state"] == "read"
-                else None,
+                date_end_reading=(
+                    cleaned_data["date_end_reading"]
+                    if cleaned_data["reading_state"] == "read"
+                    else None
+                ),
             )
             book.save()
             author_object = Author.objects.filter(
@@ -257,7 +260,7 @@ def adding_book(cleaned_data: Dict) -> Tuple[Author, Book, str]:
             ):
                 book.reading_state = cleaned_data["reading_state"]
                 if cleaned_data["reading_state"] == "read":
-                    book.date_end_reading = datetime.date.today()
+                    book.date_end_reading = cleaned_data["date_end_reading"]
                 book.save()
                 modification = "BOOK_MODIFIED"
             elif (
@@ -265,7 +268,7 @@ def adding_book(cleaned_data: Dict) -> Tuple[Author, Book, str]:
                 and cleaned_data["reading_state"] == "read"
             ):
                 book.reading_state = cleaned_data["reading_state"]
-                book.date_end_reading = datetime.date.today()
+                book.date_end_reading = cleaned_data["date_end_reading"]
                 book.save()
                 modification = "BOOK_MODIFIED"
             else:
@@ -296,9 +299,9 @@ def add_book(request):
             )
             context = {
                 "title": book.title,
-                "cover_address": cover_address
-                if cover_address is not None
-                else COVER_NOT_FOUND,
+                "cover_address": (
+                    cover_address if cover_address is not None else COVER_NOT_FOUND
+                ),
                 "display_text": MODIFICATION[modification],
             }
             return render(request, "bookshelv/validation.html", context)
@@ -387,6 +390,7 @@ def small_author_bar_chart_view(request):
         .values("full_name", "count")
         .order_by("-count")[:10]
     )
+    logger.debug(queryset)
     for mauthor in queryset:
         labels.append(mauthor["full_name"])
         data.append(mauthor["count"])
@@ -438,7 +442,7 @@ def best_author_bar_chart_view(request):
         .filter(count__gte=3)
         .order_by("-avg")[:10]
     )
-    logger.info(queryset)
+    logger.debug(queryset)
     labels, data = [], []
     for element in queryset:
         labels.append(element["full_name"])
@@ -495,13 +499,14 @@ def display_charting_page(request):
 
 
 def search_book(request):
-
     pass
 
 
 def create_wordcloud(request):
     all_titles: str = get_all_titles()
-    stop_words = stopwords.words("english") + stopwords.words("french")
+    stop_words = (
+        stopwords.words("english") + stopwords.words("french") + CUSTOM_STOPWORDS
+    )
     # stop_words = stop_words.union({",", ";", ":", "!", "?", ".", "une"})
     final_list = []
     for word in all_titles.split():
