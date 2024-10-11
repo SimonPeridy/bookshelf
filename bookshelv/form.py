@@ -1,3 +1,5 @@
+from datetime import date, datetime
+
 from django import forms
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
@@ -85,7 +87,21 @@ class AddBookForm(forms.Form):
         ],
         widget=forms.TextInput(attrs={"class": "form-control"}),
     )
-
+    date_end_reading = forms.CharField(
+        label="Date",
+        # initial=date.today(),
+        required=True,
+        widget=forms.widgets.DateInput(
+            attrs={
+                "type": "date",
+                # "placeholder": "yyyy-mm-dd (DER)",
+                "class": "form-control",
+                "value": datetime.now().strftime(
+                    "%d/%m/%Y"
+                ),  # cannot be altered : see https://forum.djangoproject.com/t/dateinput-format-not-changing-from-default/10009
+            },
+        ),
+    )
     # def clean(self):
     #     cleaned_data = super().clean()
     #     title = cleaned_data["title"]
