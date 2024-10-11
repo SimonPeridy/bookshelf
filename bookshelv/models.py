@@ -114,6 +114,8 @@ class Book(models.Model):
     def __str__(self) -> str:
         if self.reading_state == "read":
             title = f"{self.title}"
+            if self.mark:
+                title += f" (noté {self.mark}/10)"
         elif self.reading_state == "reading":
             title = f"<i>{self.title}</i>"
         else:

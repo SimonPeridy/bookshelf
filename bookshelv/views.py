@@ -30,7 +30,7 @@ from .models import Author, Book, WrittenBy
 from .utils import Round2, get_all_titles, get_cover_address
 
 COVER_NOT_FOUND = "https://www.nypl.org/scout/_next/image?url=https%3A%2F%2Fdrupal.nypl.org%2Fsites-drupal%2Fdefault%2Ffiles%2Fstyles%2Fmax_width_960%2Fpublic%2Fblogs%2FJ5LVHEL.jpg%3Fitok%3DDkMp1Irh&w=1920&q=90"
-CUSTOM_STOPWORDS = ["sous", "los", "un", "deux", "one"]
+CUSTOM_STOPWORDS = ["sous", "los", "un", "deux", "one", "entre"]
 
 logger.add("logs/log_{time}.log", rotation="1 week", backtrace=True, diagnose=True)
 
