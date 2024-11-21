@@ -14,12 +14,23 @@ from bokeh.palettes import *
 from bokeh.plotting import figure
 from bokeh.transform import linear_cmap
 from django.db import transaction
-from django.db.models import Avg, Count, Func, Max, Q, Value
+from django.db.models import (
+    Avg,
+    Count,
+    F,
+    FilteredRelation,
+    Func,
+    Max,
+    Q,
+    StdDev,
+    Value,
+)
 from django.db.models.functions import Concat, Lower
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.template import loader
 from django.utils.translation import gettext_lazy as _
+from django_pandas.io import read_frame
 from loguru import logger
 from nltk.corpus import stopwords
 from PIL import Image
@@ -51,9 +62,17 @@ def index(request):
     return render(request, "bookshelv/index.html", context)
 
 
-def get_search_result(
-    author_name: str, book_name: str
+def get_search_result(  # can only sort or search, not do both
+    author_name: str,
+    book_name: str,
+    author_sort_by: str = "alphab",
+    book_sort_by: str = "alphab",
 ) -> Tuple[List[Author], List[Book]]:
+    sort_mapping = {
+        "alphab": ["lastname", "firstname"],
+        "nalphab": ["-lastname", "-firstname"],
+        "num_books": "TBD",
+    }
     queryset = Author.objects.annotate(
         full_name=Concat("lastname", Value(", "), "firstname")
     )
@@ -63,7 +82,9 @@ def get_search_result(
             author_id__in=queryset.filter(full_name__icontains=author_name).values("id")
         )
     )
-    author_list = Author.objects.filter(id__in=base_list.values("author_id"))
+    author_list = Author.objects.filter(id__in=base_list.values("author_id")).order_by(
+        *sort_mapping[author_sort_by]
+    )
     book_list = Book.objects.filter(id__in=base_list.values("book_id"))
     return list(author_list), list(book_list)
 
@@ -79,8 +100,13 @@ def search(request):
         author_list, book_list = get_search_result(author_name, book_name)
         logger.info(f"{len(author_list)} authors and {len(book_list)} books found")
         all = False
+    # elif request.method == "GET":
     else:
-        author_list, book_list = get_search_result("", "")
+        book_sort_by = request.GET.get("book_sort_by", "alphab")
+        author_sort_by = request.GET.get("author_sort_by", "alphab")
+        logger.debug(book_sort_by)
+        logger.debug(author_sort_by)
+        author_list, book_list = get_search_result("", "", author_sort_by, book_sort_by)
         logger.info(
             f"All {len(book_list)} books and {len(author_list)} authors returned"
         )
@@ -103,12 +129,99 @@ def search(request):
     return render(request, "bookshelv/author_list.html", context)
 
 
+def search_json(request):
+    logger.info("Looking for books or authors in the database...")
+
+    author_name = request.GET.get("author_name", "").strip()
+    book_name = request.GET.get("book_name", "").strip()
+    book_sort_by = request.GET.get("book_sort_by", "alphab")
+    author_sort_by = request.GET.get("author_sort_by", "alphab")
+
+    logger.debug(book_sort_by)
+    logger.debug(author_sort_by)
+    author_list, book_list = get_search_result(
+        author_name, book_name, author_sort_by, book_sort_by
+    )
+    logger.info(f"{len(book_list)} books and {len(author_list)} authors returned")
+    # nécessaire pour que les auteurs "None" rajoutés ne s'affichent pas lors de la recherche
+    nb_author = len(author_list)
+    author_list.extend(["None"] * (len(book_list) - len(author_list)))
+    # formatted_list = zip(author_list, book_list)
+    context = {
+        "author_list": author_list,
+        "book_list": book_list,
+        "nb_authors": nb_author,
+        "nb_books": len(book_list),
+        # "formatted_list": formatted_list,
+    }
+    return render(request, "bookshelv/search.html", context)
+    # return JsonResponse(context)
+
+
 def get_all_authors() -> List[Author]:
     queryset = Author.objects.annotate(
         full_name=Concat("lastname", Value(", "), "firstname")
     )
     authors_list = list(queryset.values_list("full_name", flat=True))
     return authors_list
+
+
+def get_books(request):
+    book_queryset = Book.objects.all()
+    book_queryset = book_queryset.annotate(
+        author_lastname=F("writtenby__author__lastname"),
+        author_firstname=F("writtenby__author__firstname"),
+    )
+
+    df_books = read_frame(book_queryset)
+    df_books["date_end_reading"].fillna("", inplace=True)
+    df_books["series"].fillna("", inplace=True)
+    df_books.drop(
+        columns=["id", "is_ebook", "language", "reading_state", "progression"],
+        inplace=True,
+    )
+
+    df_books.set_index("author_lastname", inplace=True)
+    # formating to make it look better
+    df_books.columns.name = "Nom"
+    df_books.index.name = None
+    df_books.rename(
+        columns={
+            "author_firstname": "Prénom",
+            "title": "Titre",
+            "series": "Serie",
+            "series_number": "Numéro",
+            "mark": "Note",
+            "date_end_reading": "Date de fin",
+        },
+        inplace=True,
+    )
+    df_books = df_books[
+        [
+            "Prénom",
+            "Titre",
+            "Serie",
+            "Numéro",
+            "Note",
+            "Date de fin",
+        ]
+    ]
+    # logger.info(df_books.to_json(orient="records"))
+    # JsonResponse(df_books.to_json(orient="records"), safe=False)
+
+    return JsonResponse(
+        df_books.to_html(
+            # header=True,
+            na_rep="",
+            float_format="%d",
+            # justify="center",
+            # classes="dataframe table-bordered table-striped table-hover",
+            classes="display",
+            table_id="books",
+            # escape=False,
+        ),
+        safe=False,
+    )
 
 
 def get_authors(request):

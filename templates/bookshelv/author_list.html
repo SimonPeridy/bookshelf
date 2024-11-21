@@ -1,26 +1,65 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script src="{{ STATIC_URL }}/static/jquery.js"></script>
+    {% comment %} <script src="{{ STATIC_URL }}/static/jquery.js"></script> {% endcomment %}
     <script src="{{ STATIC_URL }}/static/my_js.js"></script>
-    <script type="text/javascript" src="{{ STATIC_URL }}/static/bootstrap-5.1.3/js/bootstrap.js"></script>
-    <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}/static/bootstrap-5.1.3/css/bootstrap.css"/>
+    {% comment %} <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script> {% endcomment %}
+    {% comment %} <script type="text/javascript" src="{{ STATIC_URL }}/static/bootstrap-5.1.3/js/bootstrap.js"></script> {% endcomment %}
+    {% comment %} <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}/static/bootstrap-5.1.3/css/bootstrap.css"/> {% endcomment %}
     <link rel="icon" href="{{ STATIC_URL }}/static/favicon.ico"/>
+    
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.9.2/umd/popper.min.js" integrity="sha512-2rNj2KJ+D8s1ceNasTIex6z4HWyOnEYLVC3FigGOmyQCZc2eBXKgOxQmo3oKLHyfcj53uz4QMsRCWNbLd32Q1g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    <!-- Datatables -->
+    <link href="https://cdn.datatables.net/2.1.8/css/dataTables.dataTables.min.css" rel="stylesheet" />
+    <script href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"/></script>
+    <script type="text/javascript" href="https://cdn.datatables.net/2.1.8/js/dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js"></script>
+    {% comment %} <script src="https://cdn.datatables.net/2.1.8/js/dataTables.bootstrap5.js"></script> {% endcomment %}
+            
+            
     <meta charset="UTF-8">
     <title>Composition de la bibliothèque</title>
     {% include "bookshelv/home_button.html" %}
 </head>
 <body>
-<div class="container" style="margin-top: 2%;">
+    
+    <div class="container" style="margin-top: 2%;">
+    <h2>Table</h2>
+    <div id="books_datatable">{{ books | safe }}</div>
     <div class="my-header">
         <div class="row">
-            <h3 class="col-3 align-self-left">Auteurs</h3>
+            <h3 class="col-1 align-self-left">Auteurs</h3>
+            <h3 class="col-2 align-self-left">
+                <button class="btn">
+                    
+                    {% if not request.GET.author_sort_by or request.GET.author_sort_by == "alphab" %} 
+                    <a href="?author_sort_by=nalphab">
+                        <img id="alphab_sort_icon" src="{{ STATIC_URL }}/static/sort-alpha-up.svg" data-bs-toggle="tooltip" data-bs-placement="top" title="Tri alphabétique"/>
+                    </a>
+                    {% else %}
+                    <a href="?author_sort_by=alphab">
+                        <img id="alphab_sort_icon" src="{{ STATIC_URL }}/static/sort-alpha-down.svg" data-bs-toggle="tooltip" data-bs-placement="top" title="Tri alphabétique"/>
+                    </a>
+
+                    {% endif %}
+
+                </button>
+                <button class="btn">
+                    <img src="{{ STATIC_URL }}/static/ascending-sort.svg" data-bs-toggle="tooltip" data-bs-placement="top" title="Tri par nombre de livres lus"/>
+                </button>
+            </h3>
             <div class="col-3">
                 <div class="form-inline">
                     <div class="input-group">
                         <input type="search" id="form-author" class="form-control" placeholder="Nom"
                                onkeyup="search(this.value, document.getElementById('form-book').value)"/>
-                        <button class="input-group-append input-group-text" onclick="clear_search_bar('form-author')">
+                        <button id="id_author" class="input-group-append input-group-text" onclick="clear_search_bar('form-author')">
                             &times;
                         </button>
                     </div>
@@ -43,13 +82,44 @@
     <div id="my-body">
         {% include "bookshelv/search.html" %}
     </div>
+
+
 </div>
 </body>
 <footer class="footer">
     <div class="container" style="margin-bottom: 7%;"></div>
 </footer>
-<script type="js">
-
-
-</script>
 </html>
+
+<script language="javascript">
+    function loadBooks(ftoken) {
+        $.ajax({
+            url: "books/get_books",
+            headers: { "X-CSRFToken": ftoken },
+            type: "POST",
+            async: false,
+            dataType: "json",
+            success: function (data) {
+                document.getElementById("books_datatable").innerHTML = data;
+            },
+            error: function (request, error) {
+                console.log("error: " + error);
+            }
+        });
+    }
+
+    $(document).ready(function() {
+        var token = "{{ csrf_token }}";
+        loadBooks(token);
+
+        $('#books').DataTable({
+            retrieve: true,
+            {% comment %} order: [[0, 'desc']], {% endcomment %}
+            {% comment %} paging: false, {% endcomment %}
+            scrollY: 400,
+            {% comment %} ajax: "", {% endcomment %}
+            {% comment %} dom: "lrtip", {% endcomment %}
+            {% comment %} columnDefs: [{ "searchable": false, "targets": [2,3,4] }], {% endcomment %}
+        });
+    })
+</script>
