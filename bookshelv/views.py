@@ -8,9 +8,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from bokeh.embed import components
-from bokeh.models import ColorBar, ColumnDataSource, DataRange1d, FactorRange
+from bokeh.models import ColorBar, ColumnDataSource, DataRange1d, FactorRange, Span
 from bokeh.models.tickers import FixedTicker
 from bokeh.palettes import *
+from bokeh.palettes import TolPRGn4
 from bokeh.plotting import figure
 from bokeh.transform import linear_cmap
 from django.db import transaction
@@ -38,7 +39,7 @@ from wordcloud import STOPWORDS, WordCloud
 
 from .form import AddBookForm
 from .models import Author, Book, WrittenBy
-from .utils import Round2, get_all_titles, get_cover_address
+from .utils import Round2, get_all_titles, get_cover_address, to_tuple
 
 COVER_NOT_FOUND = "https://www.nypl.org/scout/_next/image?url=https%3A%2F%2Fdrupal.nypl.org%2Fsites-drupal%2Fdefault%2Ffiles%2Fstyles%2Fmax_width_960%2Fpublic%2Fblogs%2FJ5LVHEL.jpg%3Fitok%3DDkMp1Irh&w=1920&q=90"
 CUSTOM_STOPWORDS = ["sous", "los", "un", "deux", "one", "entre"]
@@ -57,7 +58,13 @@ def index(request):
     context = {"nb_books": nb_books, "nb_authors": nb_authors}
     best_author_datas = best_author_bar_chart_view(request)
     number_books_read_by_author = small_author_bar_chart_view(request)
-    context = {**context, **best_author_datas, **number_books_read_by_author}
+    book_by_language_by_year = book_by_language_by_year_chart_view(request)
+    context = {
+        **context,
+        **best_author_datas,
+        **number_books_read_by_author,
+        **book_by_language_by_year,
+    }
     # logger.debug(f"Context : {context}")
     return render(request, "bookshelv/index.html", context)
 
@@ -590,6 +597,85 @@ def best_author_bar_chart_view(request):
 
     script, div = components(plot)
     return {"script": script, "div": div}
+
+
+def book_by_language_by_year_chart_view(request):
+    logger.info("Building the book by language by year chart")
+
+    queryset = (
+        Book.objects.exclude(date_end_reading__isnull=True)
+        .values("language", "date_end_reading__year")
+        .annotate(c=Count("language"))
+    )
+
+    df = read_frame(queryset).sort_values(by=["date_end_reading__year", "language"])
+    years = sorted(df["date_end_reading__year"].unique().astype("str"))
+    logger.debug(f"years : {years}")
+
+    res = df.groupby("date_end_reading__year").sum()
+    plotting_data_total_per_year = list(res.to_dict()["c"].values())
+    logger.debug(f"plotting_data_total_per_year : {plotting_data_total_per_year}")
+
+    list_language_year = to_tuple(
+        df[["date_end_reading__year", "language"]]
+        .astype({"date_end_reading__year": "str"})
+        .values.tolist()
+    )
+    logger.debug(f"list_language_year : {list_language_year}")
+
+    data_language_year = to_tuple(df["c"].values.tolist())
+    logger.debug(f"data_language_year : {data_language_year}")
+
+    fill_color, line_color = TolPRGn4[2:]
+
+    plot = figure(
+        title="Livres lus par langue par année",
+        toolbar_location=None,
+        tools="",
+        x_range=FactorRange(*list_language_year),
+        height=300,
+        # width=400,
+        background_fill_color="#fafafa",
+    )
+
+    plot.vbar(
+        x=list_language_year,
+        top=data_language_year,
+        width=0.8,
+        fill_color=fill_color,
+        fill_alpha=0.8,
+        line_color=line_color,
+        line_width=1.2,
+    )
+    hline = Span(location=52, dimension="width", line_color="red", line_width=1)
+    plot.line(
+        x=years,
+        y=plotting_data_total_per_year,
+        color="grey",
+        line_width=1,
+    )
+    plot.circle(
+        x=years,
+        y=plotting_data_total_per_year,
+        size=3,
+        line_color="blue",
+        fill_color="white",
+        line_width=1,
+    )
+    plot.renderers.extend([hline])
+
+    plot.yaxis.axis_label = "Nombre de livres lus"
+    plot.xaxis.major_label_orientation = pi / 4
+    # plot.xaxis.major_tick_line_width = 0
+    # plot.y_range.range_padding = 0
+
+    plot.y_range.start = 0
+    plot.x_range.range_padding = 0.1
+    plot.xgrid.grid_line_color = None
+
+    script, div = components(plot)
+
+    return {"script3": script, "div3": div}
 
 
 def category_chart(request):

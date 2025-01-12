@@ -108,3 +108,7 @@ def get_the_book(
 
 def get_all_titles():
     return " ".join(Book.objects.all().values_list("title", flat=True))
+
+
+def to_tuple(lst):
+    return tuple(to_tuple(i) if isinstance(i, list) else i for i in lst)

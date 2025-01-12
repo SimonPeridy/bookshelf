@@ -31,6 +31,11 @@ urlpatterns = [
         views.best_author_bar_chart_view,
         name="best_author_bar_chart",
     ),
+    path(
+        "book-by-language-by-year-chart/",
+        views.book_by_language_by_year_chart_view,
+        name="book_by_language_by_year_chart",
+    ),
     path("category-pie-chart/", views.category_chart, name="category_pie_chart"),
     path("charts/", views.display_charting_page, name="charts"),
     path("wordcloud/", views.create_wordcloud, name="wordcloud"),
