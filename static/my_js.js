@@ -18,6 +18,7 @@ function search(author_name, book_name) {
             "book_name": book_name
         },
         type: "POST",
+        async: true,
         success: [function (data) {
             document.getElementById("my-body").innerHTML = data
         }],
@@ -36,6 +37,7 @@ function myautocomplete(search_string, field_type) {
             "field_type": field_type
         },
         type: "POST",
+        async: true,
         success: [function (data) {
             document.getElementById("my-body").innerHTML = data
         }],
@@ -49,14 +51,15 @@ function myautocomplete(search_string, field_type) {
 window.onload = function () {
     autocomplete(document.getElementById("id_author"), authors);
     autocompleteSeries(document.getElementById("id_series"), series);
-    // document.getElementById("id_series_number").addEventListener("keyup", function () {
-    //     var value = parseInt(document.getElementById("id_series_number").value, 10)
-    //     if ((isNaN(value)) || (value < 1)) {
-    //         document.getElementById("id_series_number").setAttribute("class", "form-control is-invalid")
-    //     } else {
-    //         document.getElementById("id_series_number").setAttribute("class", "form-control")
-    //     }
-    // })
+
+    $(document).ready(function(){
+        $('[data-toggle="tooltip"]').tooltip({container:'body', trigger: 'hover', placement:"bottom"});
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    });
+
 }
 
 //autocomplete life
@@ -74,7 +77,7 @@ function autocomplete(inp, arr) {
                     "author_name": document.getElementById("id_author").value,
                 },
                 type: "POST",
-                async: false,
+                async: true,
                 success: function (data) {
                     // document.getElementById("hint").hidden = true
                     arr = data.author_list
@@ -187,9 +190,21 @@ function autocomplete(inp, arr) {
     });
 }
 
-
-//autocomplete for series
-//autocompleteSeries(document.getElementById("series"), authors);
+// function changeSort(type, icon, id) {
+//     console.log(type)
+//     console.log(icon)
+//     var e = document.getElementById(id)
+//     console.log(e)
+//     if (e.src.includes("sort-alpha-up")) {
+//         e.src = "{{ STATIC_URL }}/static/sort-alpha-down.svg"
+//         console.log(e.parentElement.href)
+//         // e.parentElement.href = "?" + type + "_sort_by=alphab"
+//     } else {
+//         e.src = "{{ STATIC_URL }}/static/sort-alpha-up.svg"
+//         console.log(e.parentElement.href)
+//         // e.parentElement.href = "?" + type + "_sort_by=nalphab"
+//     }
+// }
 
 //autocomplete life
 function autocompleteSeries(inp, arr) {
