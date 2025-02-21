@@ -1,0 +1,77 @@
+{
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": ".."
+    },
+    "containerEnv": {
+        "SHELL": "/bin/bash"
+    },
+    "remoteUser": "nonrootuser",
+    "mounts": [
+        "source=${localEnv:HOME}/.profile,target=/home/nonrootuser/.profile,type=bind,consistency=cached",
+        "source=${localEnv:HOME}/.bashrc,target=/home/nonrootuser/.bashrc,type=bind,consistency=cached",
+        "source=${localEnv:HOME}/.bash_aliases,target=/home/nonrootuser/.bash_aliases,type=bind,consistency=cached",
+        "source=${localEnv:HOME}/my_theme.omp.yaml,target=/home/nonrootuser/my_theme.omp.yaml,type=bind,consistency=cached",
+        // local volume to store the bash history. Not used atm because it doesn't work. Solving it could remove the global history
+        // "source=${localEnv:HOME}/.bash_history,target=/home/nonrootuser/.bash_history,type=bind"
+    ],
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-python.python",
+                "njpwerner.autodocstring",
+                "ms-python.black-formatter",
+                "nicolas-liger.dbml-viewer",
+                "batisteo.vscode-django",
+                "monosans.djlint",
+                "ms-azuretools.vscode-docker",
+                "mhutchie.git-graph",
+                "eamodio.gitlens",
+                "ecmel.vscode-html-css",
+                "VisualStudioExptTeam.vscodeintellicode",
+                "ms-python.isort",
+                "ZainChen.json",
+                "yzhang.markdown-all-in-one",
+                "DavidAnson.vscode-markdownlint",
+                "christian-kohler.path-intellisense",
+                "esbenp.prettier-vscode",
+                "mohsen1.prettify-json",
+                "ms-python.vscode-pylance",
+                "ms-python.pylint",
+                "ms-python.debugpy",
+                "mechatroner.rainbow-csv",
+                "matt-meyers.vscode-dbml"
+            ],
+            "settings": {
+                "python.testing.pytestArgs": [
+                    "."
+                ],
+                "python.testing.unittestEnabled": false,
+                "python.testing.pytestEnabled": true,
+                "python.formatting.provider": "black",
+                "python.linting.mypyEnabled": true,
+                "python.linting.enabled": true,
+                "terminal.integrated.defaultProfile.linux": "zsh",
+                "terminal.integrated.profiles.linux": {         
+                    "bash": {
+                        "path": "bash",
+                        "icon": "terminal-bash" }
+            }
+        }
+    },
+    // "features": {
+    //    "ghcr.io/devcontainers/features/common-utils:2": {},
+    // //    "ghcr.io/jpawlowski/devcontainer-features/powershell-extended:2": {}
+    // },
+
+	"postCreateCommand": {  
+        "Fix Volume Permissions": "sudo chown -R $(whoami): /home/nonrootuser/.bash_history",
+        "Fix Volume Permissions": "sudo chmod +777 /home/nonrootuser/.bash_history"
+    },
+
+    "portsAttributes": {
+        "5432": {
+            "label": "postgres"
+        }
+    }
+}

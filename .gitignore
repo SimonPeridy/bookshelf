@@ -3,3 +3,4 @@
 postgresql
 save.sql
 .vscode
+.env

@@ -12,6 +12,10 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 
 from pathlib import Path
 
+from dotenv import dotenv_values
+
+config = dotenv_values(".env")
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -24,7 +28,7 @@ SECRET_KEY = "django-insecure-ujy0zv)^0c__1gq9ae26dsai@zsl$to7%n84k#*lteit8p&9%$
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 # Application definition
 
@@ -74,11 +78,11 @@ WSGI_APPLICATION = "Bibliotheque.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "HOST": "localhost",
-        "NAME": "bookshelf",
-        "USER": "postgres",
-        "PASSWORD": "postgres",
-        "PORT": 5432,
+        "HOST": config["DB_HOST"],
+        "NAME": config["DB_NAME"],
+        "USER": config["DB_USER"],
+        "PASSWORD": config["DB_PASSWORD"],
+        "PORT": config["DB_PORT"],
     }
 }
 
