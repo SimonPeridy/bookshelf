@@ -31,13 +31,13 @@ WORKDIR ${WORKSPACE_PATH}
 # Upgrade pip
 RUN pip install --upgrade pip
 # Install poetry
-RUN pip install poetry
+# RUN pip install poetry
+RUN curl -sSL https://install.python-poetry.org | python3 -
 
 ## With poetry
 COPY pyproject.toml pyproject.toml
 COPY poetry.lock poetry.lock
 RUN poetry install
-
 
 # Install production dependencies
 # COPY requirements.txt /tmp/requirements.txt
