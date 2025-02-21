@@ -14,6 +14,7 @@
         "source=${localEnv:HOME}/my_theme.omp.yaml,target=/home/nonrootuser/my_theme.omp.yaml,type=bind,consistency=cached",
         // local volume to store the bash history. Not used atm because it doesn't work. Solving it could remove the global history
         // "source=${localEnv:HOME}/.bash_history,target=/home/nonrootuser/.bash_history,type=bind"
+        "type=bind,source=/home/${localEnv:USER}/.ssh,target=/home/nonrootuser/.ssh,readonly"
     ],
     "customizations": {
         "vscode": {
