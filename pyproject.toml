@@ -23,6 +23,30 @@ django-pandas = "^0.6.7"
 python-dotenv = "^1.0.1"
 
 
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.9.7"
+
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff.lint]
+select = [
+    # pycodestyle
+    "E",
+    # Pyflakes
+    "F",
+    # pyupgrade
+    "UP",
+    # flake8-bugbear
+    "B",
+    # flake8-simplify
+    "SIM",
+    # isort
+    "I",
+]
+
+[tool.pyright]
+# disabling pylance as ruff is enabled
+typeCheckingMode = "off"
+ignore = ["*"]
