@@ -26,26 +26,18 @@ python-dotenv = "^1.0.1"
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.9.7"
 mypy = "^1.15.0"
+debugpy = "^1.8.12"
+
+
+[tool.poetry.group.test.dependencies]
+pytest = "^8.3.4" # not needed here as tests are done with django
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.ruff.lint]
-select = [
-    # pycodestyle
-    "E",
-    # Pyflakes
-    "F",
-    # pyupgrade
-    "UP",
-    # flake8-bugbear
-    "B",
-    # flake8-simplify
-    "SIM",
-    # isort
-    "I",
-]
+select = ["ALL"]
 
 [tool.pyright]
 # disabling pylance as ruff is enabled
@@ -54,3 +46,4 @@ ignore = ["*"]
 
 [tool.mypy]
 ignore_missing_imports = true
+
