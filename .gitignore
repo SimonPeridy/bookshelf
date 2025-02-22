@@ -4,3 +4,4 @@ postgresql
 save.sql
 .vscode
 .env
+.mypy_cache

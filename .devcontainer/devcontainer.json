@@ -38,7 +38,8 @@
                 "ms-python.debugpy",
                 "mechatroner.rainbow-csv",
                 "matt-meyers.vscode-dbml",
-                "charliermarsh.ruff", // linter-formatter
+                "charliermarsh.ruff",
+                "ms-python.mypy-type-checker"
             ],
             "settings": {
                 "[python]": {
