@@ -1,17 +1,8 @@
-import datetime
-import json
-from enum import Enum
 from math import pi
-from typing import Dict, List, Tuple, Union
 
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
 from bokeh.embed import components
-from bokeh.models import ColorBar, ColumnDataSource, DataRange1d, FactorRange, Span
-from bokeh.models.tickers import FixedTicker
-from bokeh.palettes import *
-from bokeh.palettes import TolPRGn4
+from bokeh.models import ColumnDataSource, DataRange1d, FactorRange, Span
+from bokeh.palettes import TolPRGn4, brewer
 from bokeh.plotting import figure
 from bokeh.transform import linear_cmap
 from django.db import transaction
@@ -19,23 +10,18 @@ from django.db.models import (
     Avg,
     Count,
     F,
-    FilteredRelation,
-    Func,
     Max,
     Q,
-    StdDev,
     Value,
 )
-from django.db.models.functions import Concat, Lower
-from django.http import HttpResponse, JsonResponse
+from django.db.models.functions import Concat
+from django.http import JsonResponse
 from django.shortcuts import render
-from django.template import loader
 from django.utils.translation import gettext_lazy as _
 from django_pandas.io import read_frame
 from loguru import logger
 from nltk.corpus import stopwords
-from PIL import Image
-from wordcloud import STOPWORDS, WordCloud
+from wordcloud import WordCloud
 
 from .form import AddBookForm
 from .models import Author, Book, WrittenBy
@@ -74,23 +60,25 @@ def get_search_result(  # can only sort or search, not do both
     book_name: str,
     author_sort_by: str = "alphab",
     book_sort_by: str = "alphab",
-) -> Tuple[List[Author], List[Book]]:
+) -> tuple[list[Author], list[Book]]:
     sort_mapping = {
         "alphab": ["lastname", "firstname"],
         "nalphab": ["-lastname", "-firstname"],
         "num_books": "TBD",
     }
     queryset = Author.objects.annotate(
-        full_name=Concat("lastname", Value(", "), "firstname")
+        full_name=Concat("lastname", Value(", "), "firstname"),
     )
     base_list = WrittenBy.objects.filter(
         Q(book__title__icontains=book_name)
         & Q(
-            author_id__in=queryset.filter(full_name__icontains=author_name).values("id")
-        )
+            author_id__in=queryset.filter(full_name__icontains=author_name).values(
+                "id"
+            ),
+        ),
     )
     author_list = Author.objects.filter(id__in=base_list.values("author_id")).order_by(
-        *sort_mapping[author_sort_by]
+        *sort_mapping[author_sort_by],
     )
     book_list = Book.objects.filter(id__in=base_list.values("book_id"))
     return list(author_list), list(book_list)
@@ -115,10 +103,11 @@ def search(request):
         logger.debug(author_sort_by)
         author_list, book_list = get_search_result("", "", author_sort_by, book_sort_by)
         logger.info(
-            f"All {len(book_list)} books and {len(author_list)} authors returned"
+            f"All {len(book_list)} books and {len(author_list)} authors returned",
         )
         all = True
-    # nécessaire pour que les auteurs "None" rajoutés ne s'affichent pas lors de la recherche
+    # nécessaire pour que les auteurs "None" rajoutés
+    # ne s'affichent pas lors de la recherche
     nb_author = len(author_list)
     author_list.extend(["None"] * (len(book_list) - len(author_list)))
     formatted_list = zip(author_list, book_list)
@@ -129,9 +118,9 @@ def search(request):
         "nb_books": len(book_list),
         "formatted_list": formatted_list,
     }
-    if (
-        not all
-    ):  # TODO trouver comment afficher la page complètement remplie au début, puis suivre les requêtes en utilisant toujours le même template
+    if not all:
+        # TODO trouver comment afficher la page complètement remplie au début
+        # puis suivre les requêtes en utilisant toujours le même template
         return render(request, "bookshelv/search.html", context)
     return render(request, "bookshelv/author_list.html", context)
 
@@ -147,10 +136,14 @@ def search_json(request):
     logger.debug(book_sort_by)
     logger.debug(author_sort_by)
     author_list, book_list = get_search_result(
-        author_name, book_name, author_sort_by, book_sort_by
+        author_name,
+        book_name,
+        author_sort_by,
+        book_sort_by,
     )
     logger.info(f"{len(book_list)} books and {len(author_list)} authors returned")
-    # nécessaire pour que les auteurs "None" rajoutés ne s'affichent pas lors de la recherche
+    # nécessaire pour que les auteurs "None" rajoutés
+    # ne s'affichent pas lors de la recherche
     nb_author = len(author_list)
     author_list.extend(["None"] * (len(book_list) - len(author_list)))
     # formatted_list = zip(author_list, book_list)
@@ -165,9 +158,9 @@ def search_json(request):
     # return JsonResponse(context)
 
 
-def get_all_authors() -> List[Author]:
+def get_all_authors() -> list[Author]:
     queryset = Author.objects.annotate(
-        full_name=Concat("lastname", Value(", "), "firstname")
+        full_name=Concat("lastname", Value(", "), "firstname"),
     )
     authors_list = list(queryset.values_list("full_name", flat=True))
     return authors_list
@@ -236,14 +229,15 @@ def get_authors(request):
     if request.method == "POST":
         if request.POST.get("author_name"):
             author_set_start = Author.objects.annotate(
-                full_name=Concat("lastname", Value(", "), "firstname")
+                full_name=Concat("lastname", Value(", "), "firstname"),
             ).filter(full_name__istartswith=request.POST.get("author_name"))
             author_set_contains = Author.objects.annotate(
-                full_name=Concat("lastname", Value(", "), "firstname")
+                full_name=Concat("lastname", Value(", "), "firstname"),
             ).filter(full_name__icontains=request.POST.get("author_name"))
-            # making sure to write only once each author (as authors starting by "adl" also contain "adl")
+            # making sure to write only once each author
+            # (as authors starting by "adl" also contain "adl")
             list_author_start = list(
-                author_set_start.values_list("full_name", flat=True)
+                author_set_start.values_list("full_name", flat=True),
             )
             author_list = list_author_start + [
                 author
@@ -272,10 +266,11 @@ def get_series(request):
         return JsonResponse(context)
 
 
-def get_cleaned_data(form: AddBookForm) -> Dict:
+def get_cleaned_data(form: AddBookForm) -> dict:
     cleaned_data = form.cleaned_data
     author_lastname, author_firstname = map(
-        lambda x: x.strip(), form.cleaned_data["author"].split(",")
+        lambda x: x.strip(),
+        form.cleaned_data["author"].split(","),
     )
     series = None if cleaned_data["series"] == "" else cleaned_data["series"]
     return {
@@ -288,11 +283,7 @@ def get_cleaned_data(form: AddBookForm) -> Dict:
         "book_type": cleaned_data["book_type"],
         "language": cleaned_data["language"],
         "mark": cleaned_data["mark"],
-        "reading_state": (
-            cleaned_data["reading_state"]
-            if "reading_state" in cleaned_data.keys()
-            else "read"
-        ),
+        "reading_state": (cleaned_data.get("reading_state", "read")),
         "date_end_reading": cleaned_data["date_end_reading"],
     }
 
@@ -301,12 +292,13 @@ MODIFICATION = {
     "BOOK_ADDED": _("Votre livre a bien été ajouté à la base de données"),
     "BOOK_MODIFIED": _("Votre livre a bien été modifié dans la base de données"),
     "NO_MODIFICATION": _(
-        "Aucune modification n'a été faite, votre liste existait déjà dans la base de données."
+        "Aucune modification n'a été faite,  \
+        votre liste existait déjà dans la base de données.",
     ),
 }
 
 
-def adding_book(cleaned_data: Dict) -> Tuple[Author, Book, str]:
+def adding_book(cleaned_data: dict) -> tuple[Author, Book, str]:
     written_by_list = WrittenBy.objects.filter(
         book__title=cleaned_data["title"],
         book__book_type=cleaned_data["book_type"],
@@ -347,21 +339,22 @@ def adding_book(cleaned_data: Dict) -> Tuple[Author, Book, str]:
                     lastname=cleaned_data["author_lastname"],
                 )
                 logger.info(
-                    f"The author {repr(author_object)} doesn't exist, we are creating it."
+                    f"The author {author_object!r} doesn't exist, we create it.",
                 )
                 author_object.save()
             elif len(author_object) == 1:
                 author_object = author_object[0]
                 logger.info(
-                    f"The author {repr(author_object)} already exists in the database."
+                    f"The author {author_object!r} already exists in the database.",
                 )
             else:
                 logger.critical(
-                    f"There is a problem with the number of author matching : {repr(author_object)}"
+                    f"There is a problem with the number of author matching :\
+                          {author_object!r}",
                 )
                 raise ValueError("Too many authors matching")
             logger.info(
-                f"Creating the link between {repr(book)} and {repr(author_object)}."
+                f"Creating the link between {book!r} and {author_object!r}.",
             )
             written_by = WrittenBy.objects.create(
                 id=WrittenBy.objects.latest("id").id + 1,
@@ -400,7 +393,8 @@ def adding_book(cleaned_data: Dict) -> Tuple[Author, Book, str]:
     return author_object, book, modification
 
 
-# FORM_TEMPLATE = "bookshelv/add_book_form.html" # can't make it as personalized as I would like to
+# can't make it as personalized as I would like to
+# FORM_TEMPLATE = "bookshelv/add_book_form.html"
 FORM_TEMPLATE = "bookshelv/add_book.html"
 
 
@@ -425,14 +419,12 @@ def add_book(request):
                 "display_text": MODIFICATION[modification],
             }
             return render(request, "bookshelv/validation.html", context)
-        else:
-            logger.error("Something was wrong in the form : {}".format(form.errors))
-            # form = AddBookForm()
-            return render(request, FORM_TEMPLATE, {"form": form})
-    else:
-        form = AddBookForm()
-        logger.info("Generating the form...")
+        logger.error(f"Something was wrong in the form : {form.errors}")
+        # form = AddBookForm()
         return render(request, FORM_TEMPLATE, {"form": form})
+    form = AddBookForm()
+    logger.info("Generating the form...")
+    return render(request, FORM_TEMPLATE, {"form": form})
 
 
 def series_entry(request):
@@ -448,7 +440,8 @@ def series_entry(request):
 
 def series_list(request):
     logger.info("Accessing the series...")
-    # variable to know if the name of the series is exact (to know if we are returning books or series
+    # variable to know if the name of the series is exact \
+    # (to know if we are returning books or series)
     is_exact = False
     if (
         request.POST.get("series_name") is not None
@@ -457,7 +450,7 @@ def series_list(request):
         series_list = (
             Book.objects.filter(
                 Q(series__isnull=False)
-                & Q(series__exact=request.POST.get("series_name"))
+                & Q(series__exact=request.POST.get("series_name")),
             )
             .order_by("series_number")
             .values("title", "series_number")
@@ -468,7 +461,7 @@ def series_list(request):
             series_list = (
                 Book.objects.filter(
                     Q(series__isnull=False)
-                    & Q(series__icontains=request.POST.get("series_name"))
+                    & Q(series__icontains=request.POST.get("series_name")),
                 )
                 .distinct("series")
                 .order_by("series")
@@ -489,12 +482,11 @@ def series_list(request):
     }
     if is_exact:
         logger.info(
-            f"{nb_series} books found for the series {request.POST.get('series_name')}"
+            f"{nb_series} books found for the series {request.POST.get('series_name')}",
         )
         return render(request, "bookshelv/display_books_in_series.html", context)
-    else:
-        logger.info(f"{nb_series} series found")
-        return render(request, "bookshelv/series_list.html", context)
+    logger.info(f"{nb_series} series found")
+    return render(request, "bookshelv/series_list.html", context)
 
 
 # charting views
@@ -619,7 +611,7 @@ def book_by_language_by_year_chart_view(request):
     list_language_year = to_tuple(
         df[["date_end_reading__year", "language"]]
         .astype({"date_end_reading__year": "str"})
-        .values.tolist()
+        .values.tolist(),
     )
     logger.debug(f"list_language_year : {list_language_year}")
 
