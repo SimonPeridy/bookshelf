@@ -39,7 +39,8 @@
                 "mechatroner.rainbow-csv",
                 "matt-meyers.vscode-dbml",
                 "charliermarsh.ruff",
-                "ms-python.mypy-type-checker"
+                "ms-python.mypy-type-checker",
+                "tamasfe.even-better-toml"
             ],
             "settings": {
                 "[python]": {
@@ -79,6 +80,10 @@
     "portsAttributes": {
         "5432": {
             "label": "postgres"
+        },
+        "8000": {
+            "label": "webapp"
+        }
         }
     }
 }
