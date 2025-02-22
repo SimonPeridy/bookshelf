@@ -31,8 +31,9 @@ WORKDIR ${WORKSPACE_PATH}
 # Upgrade pip
 RUN pip install --upgrade pip
 # Install poetry
-# RUN pip install poetry
 RUN curl -sSL https://install.python-poetry.org | python3 -
+# poetry params
+RUN poetry config virtualenvs.in-project true
 
 ## With poetry
 COPY pyproject.toml pyproject.toml
