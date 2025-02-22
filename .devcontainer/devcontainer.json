@@ -50,15 +50,28 @@
                         "source.organizeImports": "explicit"
                     }
                 },
-                // defaults
-                "python.testing.unittestEnabled": false,
-                "python.testing.pytestArgs": [
-                    "."
+                // tests are a mess and are abandonned currently
+                // need to be rewritten using pytest and pytest-django
+                // unising unittest + django + poetry is just hard
+                "python.testing.unittestEnabled": true,
+                "python.testing.pytestEnabled": false,
+                // "python.testing.unittestEnabled": false,
+                // "python.testing.pytestEnabled": true,
+                // "python.testing.pytestArgs": [
+                //     "."
+                // ],
+                "python.testing.cwd": "${workspaceFolder}/.venv",
+                "python.testing.unittestArgs": [
+                    "-v",
+                    "-s",
+                    "${workspaceFolder}/bookshelv/",
+                    "-p",
+                    "*test*.py"
                 ],
-                "python.testing.pytestEnabled": true,
-                "python.formatting.provider": "black",
+                // "python.testing.pytestPath": "${workspaceFolder}/.venv/bin/pytest",
                 "python.linting.mypyEnabled": true,
                 "python.linting.enabled": true,
+                // defaults
                 "terminal.integrated.defaultProfile.linux": "zsh",
                 "terminal.integrated.profiles.linux": {         
                     "bash": {
@@ -72,10 +85,10 @@
     // //    "ghcr.io/jpawlowski/devcontainer-features/powershell-extended:2": {}
     // },
 
-	"postCreateCommand": {  
-        "Fix Volume Permissions": "sudo chown -R $(whoami): /home/nonrootuser/.bash_history",
-        "Fix Volume Permissions": "sudo chmod +777 /home/nonrootuser/.bash_history"
-    },
+	// "postCreateCommand": {  
+    //     "Fix Volume Permissions": "sudo chown -R $(whoami): /home/nonrootuser/.bash_history",
+    //     "Fix Volume Permissions": "sudo chmod +777 /home/nonrootuser/.bash_history"
+    // },
 
     "portsAttributes": {
         "5432": {
@@ -84,6 +97,6 @@
         "8000": {
             "label": "webapp"
         }
-        }
     }
+}
 }

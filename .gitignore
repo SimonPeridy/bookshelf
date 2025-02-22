@@ -6,3 +6,4 @@ save.sql
 .env
 .mypy_cache
 .pytest_cache
+mykaleidofoam

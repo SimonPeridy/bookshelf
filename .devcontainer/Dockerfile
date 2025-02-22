@@ -15,7 +15,6 @@ USER $USERNAME
 # RUN echo "$SNIPPET" >> "/home/$USERNAME/.bashrc"
 
 
-
 ## Custom utilities
 # oh-my-posh
 RUN curl -s https://ohmyposh.dev/install.sh | bash -s
@@ -39,13 +38,3 @@ RUN poetry config virtualenvs.in-project true
 COPY pyproject.toml pyproject.toml
 COPY poetry.lock poetry.lock
 RUN poetry install
-
-# Install production dependencies
-# COPY requirements.txt /tmp/requirements.txt
-# COPY poetry.lock /tmp/poetry.lock
-# COPY requirements.txt /tmp/requirements.txt
-# RUN pip install -r requirements.txt
-# && rm /tmp/requirements.txt
-# Install development dependencies (from url ?)
-# COPY requirements-dev.txt /tmp/requirements-dev.txt
-# RUN pip install -r /tmp/requirements-dev.txt && rm /tmp/requirements-dev.txt
