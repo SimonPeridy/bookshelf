@@ -1,3 +1,5 @@
+"""Views file."""
+
 from math import pi
 
 from bokeh.embed import components
@@ -15,7 +17,7 @@ from django.db.models import (
     Value,
 )
 from django.db.models.functions import Concat
-from django.http import JsonResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.utils.translation import gettext_lazy as _
 from django_pandas.io import read_frame
@@ -33,7 +35,16 @@ CUSTOM_STOPWORDS = ["sous", "los", "un", "deux", "one", "entre"]
 logger.add("logs/log_{time}.log", rotation="1 week", backtrace=True, diagnose=True)
 
 
-def index(request):
+def index(request: HttpRequest) -> HttpResponse:
+    """Create the landing page of the webapp.
+
+    Args:
+        request (HttpRequest): data
+
+    Returns:
+        HttpResponse: landing page of the webapp
+
+    """
     logger.info("Requesting index page...")
     nb_books = Book.objects.filter(reading_state="read").count()
     nb_authors = (
@@ -51,16 +62,31 @@ def index(request):
         **number_books_read_by_author,
         **book_by_language_by_year,
     }
-    # logger.debug(f"Context : {context}")
     return render(request, "bookshelv/index.html", context)
 
 
-def get_search_result(  # can only sort or search, not do both
+# can only sort or search, not do both
+def get_search_result(
     author_name: str,
     book_name: str,
     author_sort_by: str = "alphab",
     book_sort_by: str = "alphab",
 ) -> tuple[list[Author], list[Book]]:
+    """Return the results of a search.
+
+    Args:
+        author_name (str): name of the author
+        book_name (str): name of the book
+        author_sort_by (str, optional): type of sort to conduct on the author. \
+            Not working. Defaults to "alphab".
+        book_sort_by (str, optional): type of sort to conduct on the book. \
+            Not working. Defaults to "alphab".
+
+    Returns:
+        tuple[list[Author], list[Book]]: tuple containing the lists of matching \
+            authors and books
+
+    """
     sort_mapping = {
         "alphab": ["lastname", "firstname"],
         "nalphab": ["-lastname", "-firstname"],
@@ -73,7 +99,7 @@ def get_search_result(  # can only sort or search, not do both
         Q(book__title__icontains=book_name)
         & Q(
             author_id__in=queryset.filter(full_name__icontains=author_name).values(
-                "id"
+                "id",
             ),
         ),
     )
@@ -84,7 +110,18 @@ def get_search_result(  # can only sort or search, not do both
     return list(author_list), list(book_list)
 
 
-def search(request):
+def search(request: HttpRequest) -> HttpResponse:
+    """Search for books and authors matching the request.
+
+    Contains duplicates with the previous function, to be merged.
+
+    Args:
+        request (HttpRequest): informations about the request
+
+    Returns:
+        HttpResponse: response with the web page
+
+    """
     logger.info("Looking for a book or an author in the database...")
     if request.method == "POST" and (
         request.POST.get("author_name") is not None
@@ -94,8 +131,7 @@ def search(request):
         book_name = request.POST.get("book_name").strip()
         author_list, book_list = get_search_result(author_name, book_name)
         logger.info(f"{len(author_list)} authors and {len(book_list)} books found")
-        all = False
-    # elif request.method == "GET":
+        return_all_possibilities = False
     else:
         book_sort_by = request.GET.get("book_sort_by", "alphab")
         author_sort_by = request.GET.get("author_sort_by", "alphab")
@@ -105,7 +141,7 @@ def search(request):
         logger.info(
             f"All {len(book_list)} books and {len(author_list)} authors returned",
         )
-        all = True
+        return_all_possibilities = True
     # nécessaire pour que les auteurs "None" rajoutés
     # ne s'affichent pas lors de la recherche
     nb_author = len(author_list)
@@ -118,14 +154,25 @@ def search(request):
         "nb_books": len(book_list),
         "formatted_list": formatted_list,
     }
-    if not all:
+    if not return_all_possibilities:
         # TODO trouver comment afficher la page complètement remplie au début
         # puis suivre les requêtes en utilisant toujours le même template
         return render(request, "bookshelv/search.html", context)
     return render(request, "bookshelv/author_list.html", context)
 
 
-def search_json(request):
+def search_json(request: HttpRequest) -> HttpResponse:
+    """Search the db for books and authors.
+
+    Still useful ?
+
+    Args:
+        request (HttpRequest): entry data
+
+    Returns:
+        HttpResponse: web page
+
+    """
     logger.info("Looking for books or authors in the database...")
 
     author_name = request.GET.get("author_name", "").strip()
@@ -146,27 +193,44 @@ def search_json(request):
     # ne s'affichent pas lors de la recherche
     nb_author = len(author_list)
     author_list.extend(["None"] * (len(book_list) - len(author_list)))
-    # formatted_list = zip(author_list, book_list)
     context = {
         "author_list": author_list,
         "book_list": book_list,
         "nb_authors": nb_author,
         "nb_books": len(book_list),
-        # "formatted_list": formatted_list,
     }
     return render(request, "bookshelv/search.html", context)
-    # return JsonResponse(context)
 
 
 def get_all_authors() -> list[Author]:
+    """Return all the authors.
+
+    Add a new attribute to the authors, the full name being \
+        the combination of the lastname, firstname.
+
+    Returns:
+        list[Author]: list of all the authors with the added attribute
+
+    """
     queryset = Author.objects.annotate(
         full_name=Concat("lastname", Value(", "), "firstname"),
     )
-    authors_list = list(queryset.values_list("full_name", flat=True))
-    return authors_list
+    return list(queryset.values_list("full_name", flat=True))
 
 
-def get_books(request):
+def get_books(request: HttpRequest) -> JsonResponse:
+    """Return the list containing all the books.
+
+    This function formats the list as an html dataframe\
+         to be directly displayed on the web page.
+
+    Args:
+        request (HttpRequest): unused request
+
+    Returns:
+        JsonResponse: html dataframe containing the books formatted as a json
+
+    """
     book_queryset = Book.objects.all()
     book_queryset = book_queryset.annotate(
         author_lastname=F("writtenby__author__lastname"),
@@ -174,18 +238,17 @@ def get_books(request):
     )
 
     df_books = read_frame(book_queryset)
-    df_books["date_end_reading"].fillna("", inplace=True)
-    df_books["series"].fillna("", inplace=True)
-    df_books.drop(
+    df_books["date_end_reading"] = df_books["date_end_reading"].fillna("")
+    df_books["series"] = df_books["series"].fillna("")
+    df_books = df_books.drop(
         columns=["id", "is_ebook", "language", "reading_state", "progression"],
-        inplace=True,
     )
 
-    df_books.set_index("author_lastname", inplace=True)
+    df_books = df_books.set_index("author_lastname")
     # formating to make it look better
     df_books.columns.name = "Nom"
     df_books.index.name = None
-    df_books.rename(
+    df_books = df_books.rename(
         columns={
             "author_firstname": "Prénom",
             "title": "Titre",
@@ -194,7 +257,6 @@ def get_books(request):
             "mark": "Note",
             "date_end_reading": "Date de fin",
         },
-        inplace=True,
     )
     df_books = df_books[
         [
@@ -206,25 +268,31 @@ def get_books(request):
             "Date de fin",
         ]
     ]
-    # logger.info(df_books.to_json(orient="records"))
-    # JsonResponse(df_books.to_json(orient="records"), safe=False)
 
     return JsonResponse(
         df_books.to_html(
-            # header=True,
             na_rep="",
             float_format="%d",
-            # justify="center",
-            # classes="dataframe table-bordered table-striped table-hover",
             classes="display",
             table_id="books",
-            # escape=False,
         ),
         safe=False,
     )
 
 
-def get_authors(request):
+def get_authors(request: HttpRequest) -> JsonResponse:
+    """Return all the authors matching the parameters given in the request.
+
+    # TODO improve the function as nothing is done for a GET request
+    Last return is as a default, imight need to get changed.
+
+    Args:
+        request (HttpRequest): request containingauthor names
+
+    Returns:
+        JsonResponse: list of authors matching the request as a json
+
+    """
     logger.info("Requesting the authors...")
     if request.method == "POST":
         if request.POST.get("author_name"):
@@ -249,9 +317,22 @@ def get_authors(request):
         context = {"author_list": author_list}
         logger.info(f"There is {len(author_list)} authors in the db, all returned.")
         return JsonResponse(context)
+    return JsonResponse()
 
 
-def get_series(request):
+def get_series(request: HttpRequest) -> JsonResponse:
+    """Return all the series matching the parameters given in the request.
+
+    # TODO improve the function as nothing is done for a GET request
+    Last return is as a default, imight need to get changed.
+
+    Args:
+        request (HttpRequest): request containingauthor names
+
+    Returns:
+        JsonResponse: list of series matching the request as a json
+
+    """
     logger.info("Requesting the series...")
     if request.method == "POST":
         series_list = (
@@ -264,13 +345,23 @@ def get_series(request):
         context = {"series_list": series_list}
         logger.info(f"{len(series_list)} series found")
         return JsonResponse(context)
+    return JsonResponse()
 
 
 def get_cleaned_data(form: AddBookForm) -> dict:
+    """Get and clean the data from the AddBookForm.
+
+    Args:
+        form (AddBookForm): form containing the data to add or modifiy \
+            a new book in the database
+
+    Returns:
+        dict: informations about the book
+
+    """
     cleaned_data = form.cleaned_data
-    author_lastname, author_firstname = map(
-        lambda x: x.strip(),
-        form.cleaned_data["author"].split(","),
+    author_lastname, author_firstname = (
+        x.strip() for x in form.cleaned_data["author"].split(",")
     )
     series = None if cleaned_data["series"] == "" else cleaned_data["series"]
     return {
@@ -299,6 +390,22 @@ MODIFICATION = {
 
 
 def adding_book(cleaned_data: dict) -> tuple[Author, Book, str]:
+    """Add or modify a book in the database.
+
+    Args:
+        cleaned_data (dict): cleaned data from the AddBookForm
+
+    Raises:
+        ValueError: Several authors match the author given in the entry dict
+
+    Returns:
+        tuple[Author, Book, str]: tuple containing the author \
+            to which the book has been attributed, \
+            the book object and a label about the type of modification done
+
+    """
+    value_error = "Too many authors matching"
+
     written_by_list = WrittenBy.objects.filter(
         book__title=cleaned_data["title"],
         book__book_type=cleaned_data["book_type"],
@@ -352,7 +459,7 @@ def adding_book(cleaned_data: dict) -> tuple[Author, Book, str]:
                     f"There is a problem with the number of author matching :\
                           {author_object!r}",
                 )
-                raise ValueError("Too many authors matching")
+                raise ValueError(value_error)
             logger.info(
                 f"Creating the link between {book!r} and {author_object!r}.",
             )
@@ -389,16 +496,29 @@ def adding_book(cleaned_data: dict) -> tuple[Author, Book, str]:
 
         else:
             logger.critical("The book has already several copies in the database.")
-            raise ValueError("Too many authors matching")
+            raise ValueError(value_error)
     return author_object, book, modification
 
 
 # can't make it as personalized as I would like to
-# FORM_TEMPLATE = "bookshelv/add_book_form.html"
+# but it could be "bookshelv/add_book_form.html"
 FORM_TEMPLATE = "bookshelv/add_book.html"
 
 
-def add_book(request):
+def add_book(request: HttpRequest) -> HttpResponse:
+    """Get cleaned data, add the book, generate the cover address.
+
+    Does several things hence it's bad practice.
+    Error handling about the form is done here aswell.
+
+    Args:
+        request (HttpRequest): request contianing the form data
+
+    Returns:
+        HttpResponse: AddBookForm partially completed if there is an error, \
+            the validation of the book added else
+
+    """
     logger.info("Adding the book...")
     if request.method == "POST":
         form = AddBookForm(request.POST)
@@ -419,15 +539,24 @@ def add_book(request):
                 "display_text": MODIFICATION[modification],
             }
             return render(request, "bookshelv/validation.html", context)
+        # form error handling need to be studied again
         logger.error(f"Something was wrong in the form : {form.errors}")
-        # form = AddBookForm()
         return render(request, FORM_TEMPLATE, {"form": form})
     form = AddBookForm()
     logger.info("Generating the form...")
     return render(request, FORM_TEMPLATE, {"form": form})
 
 
-def series_entry(request):
+def series_entry(request: HttpRequest) -> HttpResponse:
+    """Get all the series.
+
+    Args:
+        request (HttpRequest): request
+
+    Returns:
+        HttpResponse: web page displaying the series
+
+    """
     logger.info("Loading the series list page...")
     series_list = (
         Book.objects.filter(series__isnull=False)
@@ -438,9 +567,21 @@ def series_entry(request):
     return render(request, "bookshelv/display_series.html", context)
 
 
-def series_list(request):
+def series_list(request: HttpRequest) -> HttpResponse:
+    """Get the list of books of a series.
+
+    Not satisfied of this part.
+
+    Args:
+        request (HttpRequest): request containing the informations about \
+            the series queried
+
+    Returns:
+        HttpResponse: web page containing the list of books in the series
+    
+    """
     logger.info("Accessing the series...")
-    # variable to know if the name of the series is exact \
+    # variable to know if the name of the series is exact
     # (to know if we are returning books or series)
     is_exact = False
     if (
@@ -489,10 +630,23 @@ def series_list(request):
     return render(request, "bookshelv/series_list.html", context)
 
 
+####################
 # charting views
+####################
 
 
-def small_author_bar_chart_view(request):
+def small_author_bar_chart_view(request: HttpRequest) -> dict:
+    """Build a bar chart displaying the number of books read by authors.
+
+    Might be modified to be customizable.
+
+    Args:
+        request (HttpRequest): unused request
+
+    Returns:
+        dict: dict containing the info to display the chart
+
+    """
     logger.info("Building the number of books read by author chart")
     labels, data = [], []
     queryset = (
@@ -515,7 +669,7 @@ def small_author_bar_chart_view(request):
         width=400,
     )
 
-    source = ColumnDataSource(dict(x=labels, y=data))
+    source = ColumnDataSource({"x": labels, "y": data})
     mapper = linear_cmap(
         field_name="y",
         palette=brewer["PuRd"][9][::-1][2:],
@@ -540,7 +694,18 @@ def small_author_bar_chart_view(request):
     return {"script2": script, "div2": div}
 
 
-def best_author_bar_chart_view(request):
+def best_author_bar_chart_view(request: HttpRequest) -> dict:
+    """Build a bar chart displaying the average mark of books from an author.
+
+    Might be modified to be customizable.
+
+    Args:
+        request (HttpRequest): unused request
+
+    Returns:
+        dict: dict containing the info to display the chart
+
+    """
     logger.info("Building the best marked author bar chart")
     # create a plot
 
@@ -569,7 +734,7 @@ def best_author_bar_chart_view(request):
         width=400,
     )
 
-    source = ColumnDataSource(dict(x=labels, y=data))
+    source = ColumnDataSource({"x": labels, "y": data})
 
     mapper = linear_cmap(
         field_name="y",
@@ -591,7 +756,16 @@ def best_author_bar_chart_view(request):
     return {"script": script, "div": div}
 
 
-def book_by_language_by_year_chart_view(request):
+def book_by_language_by_year_chart_view(request: HttpRequest) -> dict:
+    """Build a bar chart displaying the number of books read by year and by language.
+
+    Args:
+        request (HttpRequest): unused request
+
+    Returns:
+        dict: dict containing the info to display the chart
+
+    """
     logger.info("Building the book by language by year chart")
 
     queryset = (
@@ -600,22 +774,26 @@ def book_by_language_by_year_chart_view(request):
         .annotate(c=Count("language"))
     )
 
-    df = read_frame(queryset).sort_values(by=["date_end_reading__year", "language"])
-    years = sorted(df["date_end_reading__year"].unique().astype("str"))
+    df_books_read_by_year = read_frame(queryset).sort_values(
+        by=["date_end_reading__year", "language"]
+    )
+    years = sorted(
+        df_books_read_by_year["date_end_reading__year"].unique().astype("str"),
+    )
     logger.debug(f"years : {years}")
 
-    res = df.groupby("date_end_reading__year").sum()
+    res = df_books_read_by_year.groupby("date_end_reading__year").sum()
     plotting_data_total_per_year = list(res.to_dict()["c"].values())
     logger.debug(f"plotting_data_total_per_year : {plotting_data_total_per_year}")
 
     list_language_year = to_tuple(
-        df[["date_end_reading__year", "language"]]
+        df_books_read_by_year[["date_end_reading__year", "language"]]
         .astype({"date_end_reading__year": "str"})
         .values.tolist(),
     )
     logger.debug(f"list_language_year : {list_language_year}")
 
-    data_language_year = to_tuple(df["c"].values.tolist())
+    data_language_year = to_tuple(df_books_read_by_year["c"].values.tolist())
     logger.debug(f"data_language_year : {data_language_year}")
 
     fill_color, line_color = TolPRGn4[2:]
@@ -670,10 +848,22 @@ def book_by_language_by_year_chart_view(request):
     return {"script3": script, "div3": div}
 
 
-def category_chart(request):
+def category_chart(request: HttpRequest) -> JsonResponse:
+    """Build a pie chart displaying the number of books read by type.
+
+    Neeed to be modified, it's not using the same tool to be displayed.
+
+    Args:
+        request (HttpRequest): unused request
+
+    Returns:
+        JsonResponse: json containing the info to display the chart
+
+    """
     logger.info("Building the category chart")
     labels, data = [], []
     queryset = Book.objects.values("book_type").annotate(count=Count("book_type"))
+    # TODO need to get this from somewhere
     type_list = ["Roman", "Documentaire", "BD / Manga", "Poésie"]
     for element in queryset:
         labels.append(type_list[element["book_type"]])
@@ -685,16 +875,32 @@ def category_chart(request):
     return JsonResponse(data=context)
 
 
-def display_charting_page(request):
+def display_charting_page(request: HttpRequest) -> HttpResponse:
+    """Display the page containing all the charts.
+
+    Args:
+        request (HttpRequest): request
+
+    Returns:
+        HttpResponse: web page containing the charts
+
+    """
     return render(request, "bookshelv/charting.html")
 
 
-def search_book(request):
-    pass
+def create_wordcloud(request: HttpRequest) -> HttpResponse:
+    """Create a wordcloud and render it.
 
+    TODO separate the function.
 
-def create_wordcloud(request):
-    all_titles: str = get_all_titles()
+    Args:
+        request (HttpRequest): request
+
+    Returns:
+        HttpResponse: web page containing the wordcloud
+
+    """
+    all_titles = get_all_titles()
     stop_words = (
         stopwords.words("english") + stopwords.words("french") + CUSTOM_STOPWORDS
     )

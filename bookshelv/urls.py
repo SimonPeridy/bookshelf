@@ -17,7 +17,7 @@ urlpatterns = [
         name="search",
     ),
     path("series_entry/", views.series_entry, name="series_entry"),
-    path("search_book/", views.search_book, name="search_book"),
+    # path("search_book/", views.search_book, name="search_book"),
     path("series_entry/series_list", views.series_list, name="series_list"),
     path("add_book/get_authors/", views.get_authors, name="get_authors"),
     path("add_book/get_series/", views.get_series, name="get_series"),
