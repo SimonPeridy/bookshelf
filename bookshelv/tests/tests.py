@@ -1,11 +1,9 @@
 """Test functions."""
 
-from datetime import date
-
 from django.db.models import Q
 from django.test import TestCase
 
-from Bibliotheque.wsgi import *
+# from Bibliotheque.wsgi import *
 from bookshelv.models import Author, Book, WrittenBy
 from bookshelv.views import adding_book, get_all_authors, get_search_result
 

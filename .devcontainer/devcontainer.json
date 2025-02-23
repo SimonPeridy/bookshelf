@@ -50,25 +50,18 @@
                         "source.organizeImports": "explicit"
                     }
                 },
-                // tests are a mess and are abandonned currently
-                // need to be rewritten using pytest and pytest-django
-                // unising unittest + django + poetry is just hard
+                // needed to make django test discovery possible according to
+                // https://code.visualstudio.com/docs/python/testing#_django-unit-tests
+                "python.experiments.optInto": ["pythonTestAdapter"],
                 "python.testing.unittestEnabled": true,
                 "python.testing.pytestEnabled": false,
-                // "python.testing.unittestEnabled": false,
-                // "python.testing.pytestEnabled": true,
-                // "python.testing.pytestArgs": [
-                //     "."
-                // ],
-                "python.testing.cwd": "${workspaceFolder}/.venv",
+                "python.testing.cwd": "${workspaceFolder}/bookshelv",
                 "python.testing.unittestArgs": [
                     "-v",
-                    "-s",
-                    "${workspaceFolder}/bookshelv/",
+                    "0",
                     "-p",
                     "*test*.py"
                 ],
-                // "python.testing.pytestPath": "${workspaceFolder}/.venv/bin/pytest",
                 "python.linting.mypyEnabled": true,
                 "python.linting.enabled": true,
                 // defaults
