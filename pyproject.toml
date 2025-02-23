@@ -3,7 +3,7 @@ name = "bibliotheque"
 version = "0.2.0"
 description = ""
 authors = ["Your Name <you@example.com>"]
-packages = [{include = "Bibliotheque"}]
+packages = [{ include = "Bibliotheque" }]
 package-mode = false
 
 [tool.poetry.dependencies]
@@ -39,6 +39,9 @@ build-backend = "poetry.core.masonry.api"
 [tool.ruff.lint]
 select = ["ALL"]
 
+[tool.ruff.lint.per-file-ignores]
+"*/tests/*.py" = ["S101", "PLR2004"]
+
 [tool.pyright]
 # disabling pylance as ruff is enabled
 typeCheckingMode = "off"
@@ -46,4 +49,3 @@ ignore = ["*"]
 
 [tool.mypy]
 ignore_missing_imports = true
-

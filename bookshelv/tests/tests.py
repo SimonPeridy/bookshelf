@@ -177,7 +177,7 @@ class BookAddingTestCase(TestCase):
         assert book.mark == 4
         assert book.reading_state == "read"
         assert book.language == "french"
-        assert book.is_ebook == True
+        assert book.is_ebook is True
         assert book.book_type == 0
         assert book.date_end_reading == "1970-01-01"
         assert modification == "BOOK_ADDED"
@@ -235,7 +235,8 @@ class BookAddingTestCase(TestCase):
         assert WrittenBy.objects.filter(
             book_id=book.id,
             author_id=Author.objects.get(
-                firstname="Antoine", lastname="de Saint-Exupéry"
+                firstname="Antoine",
+                lastname="de Saint-Exupéry",
             ),
         )
 
@@ -296,7 +297,8 @@ class BookAddingTestCase(TestCase):
 
     def test_get_search_result_one_author(self):
         list_author_expected = Author.objects.filter(
-            firstname="J.K.", lastname="Rowling"
+            firstname="J.K.",
+            lastname="Rowling",
         )
         list_books_expected = Book.objects.filter(title__contains="Harry Potter")
         list_author, list_books = get_search_result(author_name="rowl", book_name="")
@@ -311,7 +313,8 @@ class BookAddingTestCase(TestCase):
 
     def test_get_search_result_one_book(self):
         list_author_expected = Author.objects.filter(
-            firstname="Eiichiro", lastname="Oda"
+            firstname="Eiichiro",
+            lastname="Oda",
         )
         list_books_expected = Book.objects.filter(title__icontains="piece")
         list_author, list_books = get_search_result(author_name="", book_name="piece")
@@ -326,11 +329,13 @@ class BookAddingTestCase(TestCase):
 
     def test_get_search_result_book_author(self):
         list_author_expected = Author.objects.filter(
-            firstname="J.K.", lastname="Rowling"
+            firstname="J.K.",
+            lastname="Rowling",
         )
         list_books_expected = Book.objects.filter(title__icontains="secret")
         list_author, list_books = get_search_result(
-            author_name="rowl", book_name="secr"
+            author_name="rowl",
+            book_name="secr",
         )
         assert len(list_author) == len(list_author_expected)
         assert all(
@@ -343,11 +348,11 @@ class BookAddingTestCase(TestCase):
 
     def test_get_search_result_books_authors(self):
         list_author_expected = Author.objects.filter(
-            Q(lastname="Carrisi") | Q(lastname="Rowling")
+            Q(lastname="Carrisi") | Q(lastname="Rowling"),
         )
         list_books_expected = Book.objects.filter(
             Q(title="La maison des voix")
-            | Q(title="Harry Potter et la chambre des secrets")
+            | Q(title="Harry Potter et la chambre des secrets"),
         )
         list_authors, list_books = get_search_result(author_name="i", book_name="la")
         assert len(list_authors) == len(list_author_expected)
