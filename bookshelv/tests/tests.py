@@ -72,7 +72,7 @@ class BookAddingTestCase(TestCase):
             is_ebook=0,
             book_type=2,
             series=None,
-            series_number=None,
+            series_number=800,
             mark=9,
             date_end_reading=None,
             reading_state="reading",
@@ -244,7 +244,7 @@ class BookAddingTestCase(TestCase):
             "author_firstname": "Eiichiro",
             "author_lastname": "Oda",
             "series": None,
-            "series_number": None,
+            "series_number": 800,
             "is_ebook": 0,
             "book_type": 2,
             "language": "english",
@@ -256,18 +256,18 @@ class BookAddingTestCase(TestCase):
         assert author.firstname == "Eiichiro"
         assert author.lastname == "Oda"
         assert book.title == "One Piece"
-        assert book.series_number == None
-        assert book.series == None
+        assert book.series_number == 800
+        assert book.series is None
         assert book.mark == 9
         assert book.reading_state == "read"
         assert book.language == "english"
-        assert book.is_ebook == False
+        assert not book.is_ebook
         assert book.book_type == 2
         assert book.date_end_reading == "1970-01-01"
         assert modification == "BOOK_MODIFIED"
         assert Book.objects.filter(
             title="One Piece",
-            series_number=None,
+            series_number=800,
             series=None,
             mark=9,
             reading_state="read",
@@ -360,4 +360,46 @@ class BookAddingTestCase(TestCase):
         assert len(list_books) == len(list_books_expected)
         assert all(
             list_books[i] == list_books_expected[i] for i in range(len(list_books))
+        )
+
+    def test_adding_book_update_book_progression_chapter(self):
+        cleaned_data = {
+            "title": "One Piece",
+            "author_firstname": "Eiichiro",
+            "author_lastname": "Oda",
+            "series": None,
+            "series_number": 810,  # adding ten chapters to the progression of the book
+            "is_ebook": 0,
+            "book_type": 2,
+            "language": "english",
+            "mark": 9,
+            "reading_state": "reading",
+            "date_end_reading": None,
+        }
+        author, book, modification = adding_book(cleaned_data)
+        assert author.firstname == "Eiichiro"
+        assert author.lastname == "Oda"
+        assert book.title == "One Piece"
+        assert book.series_number == 810
+        assert book.series is None
+        assert book.mark == 9
+        assert book.reading_state == "reading"
+        assert book.language == "english"
+        assert not book.is_ebook
+        assert book.book_type == 2
+        assert book.date_end_reading is None
+        assert modification == "BOOK_MODIFIED"
+        assert Book.objects.filter(
+            title="One Piece",
+            series_number=810,
+            series=None,
+            mark=9,
+            reading_state="reading",
+            language="english",
+            is_ebook=False,
+            book_type=2,
+        ).exists()
+        assert WrittenBy.objects.filter(
+            book_id=book.id,
+            author_id=Author.objects.get(firstname="Eiichiro", lastname="Oda"),
         )

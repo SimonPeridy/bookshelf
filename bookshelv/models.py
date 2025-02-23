@@ -1,47 +1,21 @@
-# This is an auto-generated Django model module.
-# You'll have to do the following manually to clean this up:
-#   * Rearrange models' order
-#   * Make sure each model has one field with primary_key=True
-#   * Make sure each ForeignKey and OneToOneField has `on_delete` set to the desired behavior
-#   * Remove `managed = False` lines if you wish to allow Django to create, modify, and delete the table
-# Feel free to rename the models, but don't rename db_table values or field names.
+"""Django models."""
+
 from django.db import models
 from loguru import logger
 
 
 class Author(models.Model):
+    """Author model.
+
+    Conatains all the info needed about an author.
+    """
+
     firstname = models.CharField(max_length=150)
     lastname = models.CharField(max_length=150)
 
-    def __str__(self):
-        if self.firstname == "":
-            return self.lastname
-        elif self.lastname == "":
-            return self.firstname
-        return f"{self.lastname}, {self.firstname}"
-
-    def __eq__(self, author) -> bool:
-        if isinstance(author, self.__class__):
-            return (
-                self.firstname == author.firstname and self.lastname == author.lastname
-            )
-        logger.warning(
-            "You are comparing an author with an object of a differenct class."
-        )
-        return False
-
-    def __repr__(self) -> str:
-        return (
-            f"{self.__class__.__name__}("
-            + ", ".join(
-                (f"{attr_name}={getattr(self, attr_name)}")
-                for attr_name in vars(self)
-                if not attr_name.startswith("_")
-            )
-            + ")"
-        )
-
     class Meta:
+        """Meta information about the model."""
+
         get_latest_by = "id"
         managed = True
         db_table = "author"
@@ -51,15 +25,45 @@ class Author(models.Model):
             "id",
         ]
 
-
-class WrittenBy(models.Model):
-    author = models.ForeignKey("Author", models.DO_NOTHING)
-    book = models.ForeignKey("Book", models.DO_NOTHING)
-
     def __str__(self) -> str:
-        return f"Author : {self.author}, Book : {self.book}"
+        """Display an author as a string.
+
+        Returns:
+            str: author formatted as a string
+
+        """
+        if self.firstname == "":
+            return self.lastname
+        if self.lastname == "":
+            return self.firstname
+        return f"{self.lastname}, {self.firstname}"
+
+    def __eq__(self, author: object) -> bool:
+        """Equality test between two objects.
+
+        Args:
+            author (Self): object to test equality with
+
+        Returns:
+            bool: True if equal, else False
+
+        """
+        if isinstance(author, self.__class__):
+            return (
+                self.firstname == author.firstname and self.lastname == author.lastname
+            )
+        logger.warning(
+            "You are comparing an author with an object of a differenct class.",
+        )
+        return False
 
     def __repr__(self) -> str:
+        """Display an author as a string, for debugging.
+
+        Returns:
+            str: author formatted as a string
+
+        """
         return (
             f"{self.__class__.__name__}("
             + ", ".join(
@@ -70,16 +74,51 @@ class WrittenBy(models.Model):
             + ")"
         )
 
+
+class WrittenBy(models.Model):
+    """Model linking an author and a book."""
+
+    author = models.ForeignKey("Author", models.DO_NOTHING)
+    book = models.ForeignKey("Book", models.DO_NOTHING)
+
     class Meta:
+        """Meat informations about the model."""
+
         managed = True
         db_table = "written_by"
         constraints = [
             models.UniqueConstraint(
                 fields=["author_id", "book_id"],
                 name="unique_book_id_author_id_combination",
-            )
+            ),
         ]
         get_latest_by = "book_id"
+
+    def __str__(self) -> str:
+        """Display a WrittenBy object as a string.
+
+        Returns:
+            str: WrittenBy object formatted as a string
+
+        """
+        return f"Author : {self.author}, Book : {self.book}"
+
+    def __repr__(self) -> str:
+        """Display a WrittenBy object as a string, for debugging.
+
+        Returns:
+            str: WrittenBy object formatted as a string
+
+        """
+        return (
+            f"{self.__class__.__name__}("
+            + ", ".join(
+                (f"{attr_name}={getattr(self, attr_name)}")
+                for attr_name in vars(self)
+                if not attr_name.startswith("_")
+            )
+            + ")"
+        )
 
 
 class Book(models.Model):
@@ -108,10 +147,25 @@ class Book(models.Model):
     )
     mark = models.IntegerField(blank=True, null=True)
     date_end_reading = models.DateField(blank=True, null=True)
-    # progression indice written as a string : xx% if it's xx% of reading, xxx if I am at the xxx'chapter
-    progression = models.CharField(max_length=10, blank=True, null=True)
+
+    class Meta:
+        """Meta informations about the model."""
+
+        managed = True
+        db_table = "book"
+        get_latest_by = "date_end_reading"
+        ordering = [
+            "title",
+            "series",
+        ]
 
     def __str__(self) -> str:
+        """Display a book as a string.
+
+        Returns:
+            str: book formatted as a string
+
+        """
         if self.reading_state == "read":
             title = f"{self.title}"
             if self.mark:
@@ -124,16 +178,13 @@ class Book(models.Model):
             return f"{title} <i>({self.series} {self.series_number})</i>"
         return title
 
-    class Meta:
-        managed = True
-        db_table = "book"
-        get_latest_by = "date_end_reading"
-        ordering = [
-            "title",
-            "series",
-        ]
-
     def __repr__(self) -> str:
+        """Display a book object as a string, for debugging.
+
+        Returns:
+            str: book object formatted as a string
+
+        """
         return (
             f"{self.__class__.__name__}("
             + ", ".join(
@@ -144,7 +195,16 @@ class Book(models.Model):
             + ")"
         )
 
-    def __eq__(self, book) -> bool:
+    def __eq__(self, book: object) -> bool:
+        """Equality tests between two books.
+
+        Args:
+            book (Self): book to test equality with
+
+        Returns:
+            bool: True if the books are the same, else False
+
+        """
         if isinstance(book, self.__class__):
             equality_attibutes = (
                 "title",

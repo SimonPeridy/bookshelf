@@ -364,12 +364,19 @@ def get_cleaned_data(form: AddBookForm) -> dict:
         x.strip() for x in form.cleaned_data["author"].split(",")
     )
     series = None if cleaned_data["series"] == "" else cleaned_data["series"]
+    # if it's a manga then we use the series_number, of if it's a book from a series
+    if (
+        cleaned_data["reading_state"] == "reading" and cleaned_data["book_type"] == 2
+    ) or (series is None):
+        series_number = cleaned_data["series_number"]
+    else:
+        series_number = 0
     return {
         "title": cleaned_data["title"],
         "author_firstname": author_firstname,
         "author_lastname": author_lastname,
         "series": series,
-        "series_number": cleaned_data["series_number"],
+        "series_number": series_number,
         "is_ebook": cleaned_data["ebook"],
         "book_type": cleaned_data["book_type"],
         "language": cleaned_data["language"],
@@ -410,7 +417,7 @@ def adding_book(cleaned_data: dict) -> tuple[Author, Book, str]:
         book__title=cleaned_data["title"],
         book__book_type=cleaned_data["book_type"],
         book__series=cleaned_data["series"],
-        book__series_number=cleaned_data["series_number"],
+        # book__series_number=cleaned_data["series_number"],
         book__language=cleaned_data["language"],
         author__lastname=cleaned_data["author_lastname"],
         author__firstname=cleaned_data["author_firstname"],
@@ -471,8 +478,8 @@ def adding_book(cleaned_data: dict) -> tuple[Author, Book, str]:
             written_by.save()
             modification = "BOOK_ADDED"
         elif len(written_by_list) == 1:
-            book = written_by_list[0].book
-            author_object = written_by_list[0].author
+            book: Book = written_by_list[0].book
+            author_object: Author = written_by_list[0].author
             logger.info("The book already exists in the database.")
             if book.reading_state == "to be read" and cleaned_data["reading_state"] in (
                 "reading",
@@ -481,6 +488,15 @@ def adding_book(cleaned_data: dict) -> tuple[Author, Book, str]:
                 book.reading_state = cleaned_data["reading_state"]
                 if cleaned_data["reading_state"] == "read":
                     book.date_end_reading = cleaned_data["date_end_reading"]
+                book.save()
+                modification = "BOOK_MODIFIED"
+            elif (
+                book.reading_state == "reading"
+                and cleaned_data["reading_state"] == "reading"
+                and book.book_type
+                == 2  # specific for this type of book as they are read by chapter
+            ):
+                book.series_number = cleaned_data["series_number"]
                 book.save()
                 modification = "BOOK_MODIFIED"
             elif (

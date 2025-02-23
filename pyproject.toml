@@ -40,7 +40,7 @@ build-backend = "poetry.core.masonry.api"
 select = ["ALL"]
 
 [tool.ruff.lint.per-file-ignores]
-"*/tests/*.py" = ["S101", "PLR2004"]
+"*/tests/*.py" = ["S101", "PLR2004", "ANN201", "D102"]
 
 [tool.pyright]
 # disabling pylance as ruff is enabled
