@@ -1,12 +1,15 @@
+"""Test functions."""
+
 from datetime import date
 
+from django.db.models import Q
 from django.test import TestCase
 
 from Bibliotheque.wsgi import *
-from bookshelv.models import *
-from bookshelv.views import *
+from bookshelv.models import Author, Book, WrittenBy
+from bookshelv.views import adding_book, get_all_authors, get_search_result
 
-# on lance les tests avec prp manage.py test
+# tests launched with prp manage.py test
 
 
 class BookAddingTestCase(TestCase):
@@ -163,6 +166,7 @@ class BookAddingTestCase(TestCase):
             "language": "french",
             "mark": 4,
             "reading_state": "read",
+            "date_end_reading": "1970-01-01",
         }
         author, book, modification = adding_book(cleaned_data)
         assert author.firstname == "J.K."
@@ -175,7 +179,7 @@ class BookAddingTestCase(TestCase):
         assert book.language == "french"
         assert book.is_ebook == True
         assert book.book_type == 0
-        assert book.date_end_reading == date.today()
+        assert book.date_end_reading == "1970-01-01"
         assert modification == "BOOK_ADDED"
         assert Book.objects.filter(
             title="Harry Potter 3",
@@ -190,7 +194,7 @@ class BookAddingTestCase(TestCase):
         assert WrittenBy.objects.filter(
             book_id=book.id,
             author_id=Author.objects.get(firstname="J.K.", lastname="Rowling"),
-        )
+        ).exists()
 
     def test_adding_book_new_book_new_author(self):
         cleaned_data = {
@@ -247,6 +251,7 @@ class BookAddingTestCase(TestCase):
             "language": "english",
             "mark": 9,
             "reading_state": "read",
+            "date_end_reading": "1970-01-01",
         }
         author, book, modification = adding_book(cleaned_data)
         assert author.firstname == "Eiichiro"
@@ -259,7 +264,7 @@ class BookAddingTestCase(TestCase):
         assert book.language == "english"
         assert book.is_ebook == False
         assert book.book_type == 2
-        assert book.date_end_reading == date.today()
+        assert book.date_end_reading == "1970-01-01"
         assert modification == "BOOK_MODIFIED"
         assert Book.objects.filter(
             title="One Piece",
