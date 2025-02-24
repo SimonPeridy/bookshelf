@@ -172,6 +172,8 @@ class Book(models.Model):
                 title += f" (noté {self.mark}/10)"
         elif self.reading_state == "reading":
             title = f"<i>{self.title}</i>"
+            if self.book_type == 2:  # test if it's a manga
+                title += f" <i>(chapter {self.series_number})<i/>"
         else:
             title = f"<u>{self.title}</u>"
         if self.series is not None:
